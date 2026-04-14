@@ -5,7 +5,9 @@ from fastapi import FastAPI
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 from app.api.config.scalar_config import router as scalar_router
+from app.infrastructure.config.settings import get_settings
 
+get_settings()
 
 app = FastAPI()
 app.include_router(scalar_router)
