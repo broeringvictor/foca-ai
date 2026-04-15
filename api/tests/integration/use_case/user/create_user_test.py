@@ -4,11 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.errors.exceptions import BadRequestError, ConflictError
 from app.application.use_cases.user.create import CreateUser
-from app.application.dto.user.create_dto import CreateUserInput
+from app.application.dto.user.create_dto import CreateUserDTO
 from app.infrastructure.repositories.user_repository import UserRepository
 
 
-def _make_input(**overrides) -> CreateUserInput:
+def _make_input(**overrides) -> CreateUserDTO:
     defaults = {
         "first_name": "João",
         "last_name": "Silva",
@@ -17,7 +17,7 @@ def _make_input(**overrides) -> CreateUserInput:
         "password_confirm": "Senha@1234",
     }
     defaults.update(overrides)
-    return CreateUserInput(**defaults)
+    return CreateUserDTO(**defaults)
 
 
 @pytest_asyncio.fixture

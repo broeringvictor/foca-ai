@@ -11,14 +11,14 @@ config = get_settings()
 
 class TestGenerateTokenJwt:
     def test_returns_string(self):
-        token = AuthService.generate_token_jwt(
+        token = AuthService().generate_token_jwt(
             user_id="123", email="joao@example.com", name="João Silva"
         )
 
         assert isinstance(token, str)
 
     def test_token_contains_sub(self):
-        token = AuthService.generate_token_jwt(
+        token = AuthService().generate_token_jwt(
             user_id="123", email="joao@example.com", name="João Silva"
         )
 
@@ -26,7 +26,7 @@ class TestGenerateTokenJwt:
         assert payload["sub"] == "123"
 
     def test_token_contains_email(self):
-        token = AuthService.generate_token_jwt(
+        token = AuthService().generate_token_jwt(
             user_id="123", email="joao@example.com", name="João Silva"
         )
 
@@ -34,7 +34,7 @@ class TestGenerateTokenJwt:
         assert payload["email"] == "joao@example.com"
 
     def test_token_contains_name(self):
-        token = AuthService.generate_token_jwt(
+        token = AuthService().generate_token_jwt(
             user_id="123", email="joao@example.com", name="João Silva"
         )
 
@@ -42,7 +42,7 @@ class TestGenerateTokenJwt:
         assert payload["name"] == "João Silva"
 
     def test_token_contains_exp(self):
-        token = AuthService.generate_token_jwt(
+        token = AuthService().generate_token_jwt(
             user_id="123", email="joao@example.com", name="João Silva"
         )
 
@@ -50,7 +50,7 @@ class TestGenerateTokenJwt:
         assert "exp" in payload
 
     def test_token_contains_iat(self):
-        token = AuthService.generate_token_jwt(
+        token = AuthService().generate_token_jwt(
             user_id="123", email="joao@example.com", name="João Silva"
         )
 
@@ -58,7 +58,7 @@ class TestGenerateTokenJwt:
         assert "iat" in payload
 
     def test_token_is_decodable_with_correct_key(self):
-        token = AuthService.generate_token_jwt(
+        token = AuthService().generate_token_jwt(
             user_id="123", email="joao@example.com", name="João Silva"
         )
 
@@ -66,7 +66,7 @@ class TestGenerateTokenJwt:
         assert payload["sub"] == "123"
 
     def test_token_fails_with_wrong_key(self):
-        token = AuthService.generate_token_jwt(
+        token = AuthService().generate_token_jwt(
             user_id="123", email="joao@example.com", name="João Silva"
         )
 

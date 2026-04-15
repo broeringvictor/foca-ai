@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import load_only
 
 from app.domain.entities.user import User
+from app.domain.value_objects.name import Name
 from app.domain.value_objects.password import Password
 from app.infrastructure.model.user_model import UserModel
 
@@ -17,6 +18,8 @@ class AuthRepository:
             select(UserModel)
             .options(load_only(
                 UserModel.id,
+                UserModel.first_name,
+                UserModel.last_name,
                 UserModel.email,
                 UserModel.hashed_password,
                 UserModel.is_active,
@@ -33,6 +36,7 @@ class AuthRepository:
     def _to_auth_entity(model: UserModel) -> User:
         return User(
             id=model.id,
+            name=Name(first_name=model.first_name, last_name=model.last_name),
             email=model.email,
             password=Password.from_hash(model.hashed_password),
             is_active=model.is_active,

@@ -2,11 +2,11 @@ import pytest
 from unittest.mock import AsyncMock
 
 from app.application.use_cases.user.create import CreateUser
-from app.application.dto.user.create_dto import CreateUserInput
+from app.application.dto.user.create_dto import CreateUserDTO
 from app.domain.entities.user import User
 
 
-def _make_input(**overrides) -> CreateUserInput:
+def _make_input(**overrides) -> CreateUserDTO:
     defaults = {
         "first_name": "João",
         "last_name": "Silva",
@@ -15,7 +15,7 @@ def _make_input(**overrides) -> CreateUserInput:
         "password_confirm": "Senha@1234",
     }
     defaults.update(overrides)
-    return CreateUserInput(**defaults)
+    return CreateUserDTO(**defaults)
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@ from pydantic import BaseModel, EmailStr, ConfigDict, UUID8, Field
 from app.domain.value_objects.name import Name
 
 
-class CreateUserInput(BaseModel):
+class CreateUserDTO(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     first_name: str = Field(..., min_length=3, max_length=50, examples=["Gentil João"])
@@ -19,9 +19,8 @@ class CreateUserInput(BaseModel):
     password_confirm: str
 
 
-class CreateUserOutput(BaseModel):
+class CreateUserResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
-
     user_id: UUID8
     name: Name
     email: EmailStr

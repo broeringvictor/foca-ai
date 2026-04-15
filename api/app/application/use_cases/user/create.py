@@ -3,14 +3,14 @@ from loguru import logger
 from app.api.errors.exceptions import BadRequestError, ConflictError
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import IUserRepository
-from app.application.dto.user.create_dto import CreateUserInput, CreateUserOutput
+from app.application.dto.user.create_dto import CreateUserDTO, CreateUserResponse
 
 class CreateUser:
 
     def __init__(self, repository: IUserRepository) -> None:
         self._repo = repository
 
-    async def execute(self, input_data: CreateUserInput) -> CreateUserOutput:
+    async def execute(self, input_data: CreateUserDTO) -> CreateUserResponse:
 
         # Verifica a senha antes do e-mail para não gastar processamento.
         if input_data.password != input_data.password_confirm:
@@ -41,7 +41,7 @@ class CreateUser:
             logger.exception(f"Erro ao salvar usuário: {e}")
             raise
 
-        return CreateUserOutput(
+        return CreateUserResponse(
             email=user.email,
             user_id=user.id,
             name=user.name,
