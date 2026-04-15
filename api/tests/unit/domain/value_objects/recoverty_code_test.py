@@ -35,6 +35,6 @@ class TestRecoveryCode:
         code = RecoveryCode(
             expires_at=datetime.now(timezone.utc) - timedelta(hours=1)
         )
-        with pytest.raises(ValueError, match="expirado"):
+        with pytest.raises(ValueError, match="expirou"):
             code.verify(code.code)
 
