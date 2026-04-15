@@ -1,5 +1,6 @@
 from loguru import logger
 
+from app.api.errors.exceptions import BadRequestError, ConflictError
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import IUserRepository
 from app.application.dto.user.create_dto import CreateUserInput, CreateUserOutput
@@ -13,11 +14,19 @@ class CreateUser:
 
         # Verifica a senha antes do e-mail para não gastar processamento.
         if input_data.password != input_data.password_confirm:
-            raise ValueError("As senhas são divergentes")
+            raise BadRequestError(
+                "As senhas são divergentes",
+                field="password_confirm",
+                source="body",
+            )
 
         # 2 - busca pelo e-mail
         if await self._repo.find_by_email(input_data.email):
-            raise ValueError(f"Email {input_data.email} já está em uso.")
+            raise ConflictError(
+                f"Email {input_data.email} já está em uso.",
+                field="email",
+                source="body",
+            )
 
         user = User.create(
             first_name=input_data.first_name,

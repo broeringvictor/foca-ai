@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.errors.exceptions import BadRequestError, ConflictError
 from app.application.use_cases.user.create import CreateUser
 from app.application.dto.user.create_dto import CreateUserInput
 from app.infrastructure.repositories.user_repository import UserRepository
@@ -63,7 +64,7 @@ class TestCreateUserIntegration:
         await use_case.execute(_make_input())
         await session.flush()
 
-        with pytest.raises(ValueError, match="já está em uso"):
+        with pytest.raises(ConflictError, match="já está em uso"):
             await use_case.execute(_make_input(
                 first_name="Maria",
                 last_name="Costa",
@@ -71,7 +72,7 @@ class TestCreateUserIntegration:
 
     @pytest.mark.asyncio
     async def test_rejects_password_mismatch(self, use_case: CreateUser):
-        with pytest.raises(ValueError, match="senhas são divergentes"):
+        with pytest.raises(BadRequestError, match="senhas são divergentes"):
             await use_case.execute(_make_input(password_confirm="OutraSenha"))
 
     @pytest.mark.asyncio
