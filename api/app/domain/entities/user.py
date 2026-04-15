@@ -14,8 +14,10 @@ class User(BaseModel):
     email: EmailStr
     password: Password
     is_active: StrictBool
+
     #TODO: IMPLEMENTAR O ENVIO DO CÓDIGO POR E-MAIL COM A URL DO FRONT
     recovery_code: RecoveryCode = Field(default_factory=RecoveryCode)
+
     create_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     modified_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
