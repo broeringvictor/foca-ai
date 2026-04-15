@@ -1,6 +1,6 @@
 import re
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
 
 class Name(BaseModel):
@@ -45,13 +45,6 @@ class Name(BaseModel):
             raise ValueError(f"{campo} não pode começar ou terminar com caractere especial.")
 
         return v.title()
-
-    @model_validator(mode="after")
-    def validate_full_name(self):
-        """Valida o tamanho total do nome completo."""
-        if len(f"{self.first_name} {self.last_name}") > 50:
-            raise ValueError("Nome completo deve ter no máximo 50 caracteres.")
-        return self
 
 
 

@@ -81,14 +81,39 @@ class TestNameLastNameValidation:
             Name(first_name="João", last_name="Si1va")
 
 
-class TestNameFullNameValidation:
-    def test_full_name_too_long_raises(self):
-        # first(24) + space + last(26) = 51 chars
-        with pytest.raises(ValueError, match="no máximo 50 caracteres"):
-            Name(first_name="A" * 24, last_name="B" * 26)
 
-    def test_full_name_exactly_50_chars_is_valid(self):
-        # first(24) + space + last(25) = 50 chars
-        name = Name(first_name="Aa" * 12, last_name="Bb" * 12 + "B")
+class TestNameCompositeNames:
+    """Nomes compostos comuns no Brasil."""
 
-        assert len(name.value) == 50
+    def test_compound_first_name(self):
+        name = Name(first_name="Ana Clara", last_name="Silva")
+        assert name.first_name == "Ana Clara"
+        assert name.value == "Ana Clara Silva"
+
+    def test_compound_last_name(self):
+        name = Name(first_name="João", last_name="da Silva")
+        assert name.last_name == "Da Silva"
+        assert name.value == "João Da Silva"
+
+    def test_compound_first_and_last_name(self):
+        name = Name(first_name="João Pedro", last_name="dos Santos")
+        assert name.first_name == "João Pedro"
+        assert name.last_name == "Dos Santos"
+
+    def test_name_with_apostrophe(self):
+        name = Name(first_name="D'Artagnan", last_name="Silva")
+        assert name.first_name == "D'Artagnan"
+
+
+class TestNameImmutability:
+    """O Name é um Value Object imutável (frozen=True)."""
+
+    def test_cannot_change_first_name(self):
+        name = Name(first_name="João", last_name="Silva")
+        with pytest.raises(Exception):
+            name.first_name = "Carlos"  # type: ignore[misc]
+
+    def test_cannot_change_last_name(self):
+        name = Name(first_name="João", last_name="Silva")
+        with pytest.raises(Exception):
+            name.last_name = "Costa"  # type: ignore[misc]

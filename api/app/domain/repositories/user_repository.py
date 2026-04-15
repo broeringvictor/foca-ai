@@ -1,0 +1,9 @@
+from typing import Protocol
+
+from app.domain.entities.user import User
+
+
+class IUserRepository(Protocol):
+    async def save(self, user: User) -> None: ...
+    async def find_by_email(self, email: str) -> User | None: ...
+    async def find_by_id(self, id: str) -> User | None: ...
