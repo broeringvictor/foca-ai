@@ -12,10 +12,10 @@ DEFAULT_PASSWORD = "DefaultP@ssw0rd!"
 class UserFactory(factory_boy.Factory):
     class Meta:
         model = UserModel
-        exclude = ["first_name", "last_name"]
 
     first_name = factory_boy.LazyFunction(lambda: _faker.first_name())
     last_name = factory_boy.LazyFunction(lambda: _faker.last_name())
+    email = factory_boy.LazyFunction(lambda: _faker.email())
 
     @classmethod
     def _build(cls, model_class, *args, **kwargs):
