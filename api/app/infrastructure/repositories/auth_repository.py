@@ -3,12 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import load_only
 
 from app.domain.entities.user import User
-from app.domain.value_objects.name import Name
 from app.domain.value_objects.password import Password
-from model.user_model import UserModel
+from app.infrastructure.model.user_model import UserModel
 
 
-class UserRepository:
+class AuthRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
@@ -17,9 +16,10 @@ class UserRepository:
         stmt = (
             select(UserModel)
             .options(load_only(
-            UserModel.id,
-                  UserModel.email,
-                  UserModel.hashed_password,
+                UserModel.id,
+                UserModel.email,
+                UserModel.hashed_password,
+                UserModel.is_active,
             ))
             .where(UserModel.email == email)
         )
@@ -33,7 +33,7 @@ class UserRepository:
     def _to_auth_entity(model: UserModel) -> User:
         return User(
             id=model.id,
-            email = model.email,
-            password = Password.from_hash(model.hashed_password),
-            is_active = model.is_active,
+            email=model.email,
+            password=Password.from_hash(model.hashed_password),
+            is_active=model.is_active,
         )
