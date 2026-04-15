@@ -3,6 +3,7 @@ import pytest_asyncio
 from typing import AsyncGenerator
 
 from fastapi.testclient import TestClient
+from loguru import logger
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -10,6 +11,8 @@ from main import app
 from app.infrastructure.model import table_registry
 from app.infrastructure.session import get_session
 from tests.factories.user import UserFactory
+
+logger.disable("app")
 
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

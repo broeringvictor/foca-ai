@@ -4,7 +4,7 @@ from uuid import uuid8
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.user import User
-from app.infrastructure.repository.user_repository import UserRepository
+from app.infrastructure.repositories.user_repository import UserRepository
 
 
 @pytest_asyncio.fixture

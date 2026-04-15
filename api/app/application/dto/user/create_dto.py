@@ -7,7 +7,7 @@ from app.domain.value_objects.name import Name
 class CreateUserInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
-    frist_name: str
+    first_name: str
     last_name: str
     email: EmailStr
     password: str
