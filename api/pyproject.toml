@@ -10,6 +10,7 @@ dependencies = [
     "loguru>=0.7.3",
     "psycopg2-binary>=2.9.11",
     "psycopg[binary]>=3.3.3",
+    "pydantic>=2.13.0",
     "pydantic-settings>=2.13.1",
     "scalar-fastapi>=1.8.2",
     "sqlalchemy>=2.0.48",
