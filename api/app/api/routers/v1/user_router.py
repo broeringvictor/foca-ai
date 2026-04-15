@@ -10,7 +10,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.post(
     "/",
-    summary="Cria um usário novo",
+    summary="Create",
     response_model=CreateUserOutput,
     status_code=status.HTTP_201_CREATED,
     responses={
