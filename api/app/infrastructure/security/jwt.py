@@ -16,7 +16,7 @@ def create_access_token(sub: str, extra: dict | None = None) -> str:
     }
     if extra:
         payload.update(extra)
-    return jwt.encode(payload, config.JWT_KEY, algorithm=config.JWT_ALGORITHM, https_only=True)
+    return jwt.encode(payload, config.JWT_KEY, algorithm=config.JWT_ALGORITHM)
 
 
 def decode_access_token(token: str) -> dict:
