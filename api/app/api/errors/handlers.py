@@ -24,3 +24,13 @@ async def request_validation_error_handler(
         status_code=422,
         content=dict(detail=format_errors(err.errors())),
     )
+
+
+async def value_error_handler(
+    request: Request, exc: Exception
+) -> Response:
+    err = cast(ValueError, exc)
+    return JSONResponse(
+        status_code=422,
+        content={"detail": [{"field": "geral", "message": str(err)}]},
+    )
