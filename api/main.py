@@ -15,7 +15,6 @@ from app.api.routers.v1 import api_router as v1_router
 from app.infrastructure.config.settings import get_settings
 
 get_settings()
-
 app = FastAPI()
 app.include_router(scalar_router)
 app.include_router(v1_router, prefix="/api/v1")
