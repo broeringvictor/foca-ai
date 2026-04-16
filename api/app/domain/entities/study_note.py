@@ -9,14 +9,14 @@ class StudyNote(Entity):
     :ivar user_id: User.id -> UUID8.
     :ivar title: str, 4-100 caracteres.
     :ivar description: str opcional, 4-500 caracteres.
-    :ivar content: str opcional, até 5000 caracteres (Markdown).
+    :ivar content: str opcional, até 20000 caracteres (Markdown).
     :ivar tags: list[str], default [].
     """
 
     user_id: UUID8
     title: str = Field(..., min_length=4, max_length=100)
     description: str | None = Field(None, min_length=4, max_length=500)
-    content: str | None = Field(None, max_length=5000)
+    content: str | None = Field(None, max_length=20000)
     tags: list[str] = Field(default_factory=list)
 
     @classmethod

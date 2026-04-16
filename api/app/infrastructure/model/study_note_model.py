@@ -25,7 +25,7 @@ class StudyNoteModel:
     )
     title: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    content: Mapped[str | None] = mapped_column(String(5000), nullable=True)
+    content: Mapped[str | None] = mapped_column(String(20000), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 

@@ -20,7 +20,7 @@ class CreateStudyNoteDTO(BaseModel):
     )
     content: str | None = Field(
         None,
-        max_length=5000,
+        max_length=20000,
         examples=["# SQLAlchemy Async\n\n- Use `AsyncSession`\n- Controle commit no `get_session`"],
     )
     tags: list[str] = Field(default_factory=list, examples=[["python", "sqlalchemy"]])

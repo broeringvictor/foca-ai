@@ -6,6 +6,7 @@ from fastapi import Depends, File, Form, UploadFile
 from loguru import logger
 
 from app.api.errors.exceptions import BadRequestError
+from app.infrastructure.config.settings import get_settings
 
 ALLOWED_MARKDOWN_EXTENSIONS = {".md", ".markdown"}
 ALLOWED_MARKDOWN_MIME_TYPES = {
@@ -15,17 +16,10 @@ ALLOWED_MARKDOWN_MIME_TYPES = {
     "",
     None,
 }
-MAX_MARKDOWN_CONTENT_LEN = 5000
-MAX_MARKDOWN_BYTES = 20_000
-SUSPICIOUS_MARKDOWN_PATTERNS = (
-    "<script",
-    "javascript:",
-    "<iframe",
-    "<object",
-    "<embed",
-    "onerror=",
-    "onload=",
-)
+settings = get_settings()
+MAX_FILENAME_LEN = settings.MAX_FILENAME_LEN
+MAX_MARKDOWN_CONTENT_LEN = settings.MAX_MARKDOWN_CONTENT_LEN
+MAX_MARKDOWN_BYTES = settings.MAX_MARKDOWN_BYTES
 
 
 @dataclass(frozen=True)
@@ -56,6 +50,14 @@ async def get_markdown_upload(
             source="file",
         )
 
+    if len(filename) > MAX_FILENAME_LEN:
+        logger.warning("study_note.upload: filename excede limite len={}", len(filename))
+        raise BadRequestError(
+            "Nome do arquivo excede 255 caracteres",
+            field="content_file",
+            source="file",
+        )
+
     extension = Path(filename).suffix.lower()
     if extension not in ALLOWED_MARKDOWN_EXTENSIONS:
         logger.warning(
@@ -77,6 +79,18 @@ async def get_markdown_upload(
         )
         raise BadRequestError(
             "Content-Type do arquivo inválido para markdown",
+            field="content_file",
+            source="file",
+        )
+
+    if content_file.size is not None and content_file.size > MAX_MARKDOWN_BYTES:
+        logger.warning(
+            "study_note.upload: arquivo acima do limite (pre-read) filename={} size_bytes={}",
+            filename,
+            content_file.size,
+        )
+        raise BadRequestError(
+            "Arquivo excede o tamanho máximo permitido",
             field="content_file",
             source="file",
         )
@@ -130,12 +144,10 @@ async def get_markdown_upload(
             MAX_MARKDOWN_CONTENT_LEN,
         )
         raise BadRequestError(
-            "Conteúdo excede 5000 caracteres",
+            "Conteúdo excede 20000 caracteres",
             field="content_file",
             source="file",
         )
-
-    _assert_no_suspicious_content(content)
 
     checksum_sha256 = sha256(raw).hexdigest()
     line_count = content.count("\n") + (1 if content else 0)
@@ -200,18 +212,3 @@ def parse_tags(tags: str | None = Form(None)) -> list[str]:
         )
 
     return parsed
-
-
-def _assert_no_suspicious_content(content: str) -> None:
-    lowered = content.lower()
-    for pattern in SUSPICIOUS_MARKDOWN_PATTERNS:
-        if pattern in lowered:
-            logger.warning(
-                "study_note.upload: padrao suspeito detectado pattern={} ",
-                pattern,
-            )
-            raise BadRequestError(
-                "Conteúdo markdown contém padrão potencialmente malicioso",
-                field="content_file",
-                source="file",
-            )

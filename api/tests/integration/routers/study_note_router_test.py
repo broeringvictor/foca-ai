@@ -77,7 +77,7 @@ class TestStudyNoteRouter:
 
         assert response.status_code == 400
 
-    def test_create_study_note_rejects_suspicious_content(self, client):
+    def test_create_study_note_accepts_raw_html_content(self, client):
         _create_user(client)
         _authenticate(client)
 
@@ -93,8 +93,4 @@ class TestStudyNoteRouter:
             },
         )
 
-        assert response.status_code == 400
-        body = response.json()
-        assert any(
-            "malicioso" in error.get("message", "") for error in body.get("detail", [])
-        )
+        assert response.status_code == 201

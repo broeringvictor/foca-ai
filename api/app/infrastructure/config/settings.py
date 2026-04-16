@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 30
 
+    ## 3. UPLOAD
+    ### Markdown
+    MAX_FILENAME_LEN: int = 255
+    MAX_MARKDOWN_CONTENT_LEN: int = 20_000
+    MAX_MARKDOWN_BYTES: int = 120_000
+
     # SECRETS MAP
     POSTGRES_PASSWORD: str
     JWT_KEY: str

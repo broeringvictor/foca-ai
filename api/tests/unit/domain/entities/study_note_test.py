@@ -152,11 +152,11 @@ class TestStudyNoteContentValidation:
             StudyNote.create(
                 user_id=_user_id(),
                 title="Título",
-                content="a" * 5001,
+                content="a" * 20001,
             )
 
     def test_content_at_max_length_is_valid(self):
-        content = "a" * 5000
+        content = "a" * 20000
         note = StudyNote.create(
             user_id=_user_id(),
             title="Título",
