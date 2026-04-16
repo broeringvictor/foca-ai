@@ -23,8 +23,9 @@ class UserRepository:
 
     # ── busca ──────────────────────────────────────────────────────────────────
 
-    async def find_by_id(self, user_id: str) -> User | None:
-        stmt = select(UserModel).where(UserModel.id == user_id)
+    async def find_by_id(self, user_id: str | UUID) -> User | None:
+        uid = user_id if isinstance(user_id, UUID) else UUID(user_id)
+        stmt = select(UserModel).where(UserModel.id == uid)
         result = await self._session.execute(stmt)
         model: UserModel | None = result.scalar_one_or_none()
         if model is None:

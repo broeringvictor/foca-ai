@@ -53,7 +53,12 @@ async def session(setup_db) -> AsyncGenerator[AsyncSession, None]:
 def client(setup_db):
     async def get_session_override():
         async with TestingSessionLocal() as session:
-            yield session
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
 
     app.dependency_overrides[get_session] = get_session_override
 
