@@ -4,9 +4,13 @@ from pathlib import Path
 
 from fastapi import Depends, File, Form, UploadFile
 from loguru import logger
+from pydantic import TypeAdapter, ValidationError
 
 from app.api.errors.exceptions import BadRequestError
+from app.domain.value_objects.tags import Tags
 from app.infrastructure.config.settings import get_settings
+
+_tags_adapter: TypeAdapter[list[str]] = TypeAdapter(Tags)
 
 ALLOWED_MARKDOWN_EXTENSIONS = {".md", ".markdown"}
 ALLOWED_MARKDOWN_MIME_TYPES = {
@@ -185,30 +189,9 @@ async def get_markdown_content(
 def parse_tags(tags: str | None = Form(None)) -> list[str]:
     if not tags:
         return []
-
-    parsed: list[str] = []
-    seen: set[str] = set()
-    for raw_tag in tags.split(","):
-        tag = raw_tag.strip()
-        if not tag:
-            continue
-        if len(tag) > 30:
-            raise BadRequestError(
-                "Tag excede 30 caracteres",
-                field="tags",
-                source="form",
-            )
-        lowered = tag.lower()
-        if lowered in seen:
-            continue
-        seen.add(lowered)
-        parsed.append(tag)
-
-    if len(parsed) > 20:
-        raise BadRequestError(
-            "Quantidade máxima de tags excedida",
-            field="tags",
-            source="form",
-        )
-
-    return parsed
+    try:
+        return _tags_adapter.validate_python(tags.split(","))
+    except ValidationError as exc:
+        ctx = exc.errors()[0].get("ctx", {})
+        msg = str(ctx.get("error")) if ctx.get("error") else exc.errors()[0]["msg"]
+        raise BadRequestError(msg, field="tags", source="form") from exc

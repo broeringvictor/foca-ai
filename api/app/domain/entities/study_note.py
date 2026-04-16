@@ -1,6 +1,7 @@
 from pydantic import UUID8, Field
 
 from app.domain.entities.base import Entity
+from app.domain.value_objects.tags import Tags
 
 
 class StudyNote(Entity):
@@ -10,14 +11,14 @@ class StudyNote(Entity):
     :ivar title: str, 4-100 caracteres.
     :ivar description: str opcional, 4-500 caracteres.
     :ivar content: str opcional, até 20000 caracteres (Markdown).
-    :ivar tags: list[str], default [].
+    :ivar tags: Tags livres (máx 20, cada uma até 30 caracteres).
     """
 
     user_id: UUID8
     title: str = Field(..., min_length=4, max_length=100)
     description: str | None = Field(None, min_length=4, max_length=500)
     content: str | None = Field(None, max_length=20000)
-    tags: list[str] = Field(default_factory=list)
+    tags: Tags = Field(default_factory=list)
 
     @classmethod
     def create(
