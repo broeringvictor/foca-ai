@@ -86,8 +86,8 @@ class TestCreateUser:
             email="joao@example.com",
         )
 
-        assert isinstance(user.create_at, datetime)
-        assert isinstance(user.modified_at, datetime)
+        assert isinstance(user.created_at, datetime)
+        assert isinstance(user.updated_at, datetime)
 
     def test_is_active_default_true(self):
         user = User.create(

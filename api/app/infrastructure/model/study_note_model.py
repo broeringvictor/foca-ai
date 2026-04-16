@@ -1,20 +1,24 @@
+from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import String, DateTime, ForeignKey, JSON
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
-from sqlalchemy.orm import Mapped, mapped_column, relationship, MappedColumn
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import TYPE_CHECKING
 
 from app.infrastructure.model import table_registry
+
+if TYPE_CHECKING:
+    from app.infrastructure.model.user_model import UserModel
 
 
 @table_registry.mapped_as_dataclass()
 class StudyNoteModel:
-
     __tablename__ = "study_note"
 
-    id: Mapped[UUID] = MappedColumn(PG_UUID(as_uuid=True), primary_key=True)
-    user_id: Mapped[UUID] = MappedColumn(
+    id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
+    user_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,

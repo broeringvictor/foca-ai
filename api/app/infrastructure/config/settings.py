@@ -3,6 +3,7 @@ from functools import lru_cache
 from argon2 import PasswordHasher
 from sqlalchemy.engine import URL
 
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
@@ -22,7 +23,6 @@ class Settings(BaseSettings):
     ### JWT
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 30
-
 
     # SECRETS MAP
     POSTGRES_PASSWORD: str

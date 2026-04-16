@@ -20,12 +20,10 @@ class UserRepository:
         model = self._to_model(user)
         self._session.add(model)
 
-
     # ── busca ──────────────────────────────────────────────────────────────────
 
-    async def find_by_id(self, user_id: str | UUID) -> User | None:
-        uid = user_id if isinstance(user_id, UUID) else UUID(user_id)
-        stmt = select(UserModel).where(UserModel.id == uid)
+    async def find_by_id(self, user_id: UUID) -> User | None:
+        stmt = select(UserModel).where(UserModel.id == user_id)
         result = await self._session.execute(stmt)
         model: UserModel | None = result.scalar_one_or_none()
         if model is None:
@@ -51,8 +49,8 @@ class UserRepository:
             password=Password.from_hash(model.hashed_password),
             recovery_code=RecoveryCode(code=model.code, expires_at=model.expires_at),
             is_active=model.is_active,
-            create_at=model.create_at,
-            modified_at=model.modified_at,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
         )
 
     @staticmethod
@@ -65,8 +63,7 @@ class UserRepository:
             hashed_password=user.password.hashed_value,
             code=str(user.recovery_code.code),
             expires_at=user.recovery_code.expires_at,
-            create_at=user.create_at,
-            modified_at=user.modified_at,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
             is_active=user.is_active,
         )
-

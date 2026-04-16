@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import Depends
 from jwt import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +28,7 @@ def get_authenticate_user_dependency(
 
 def get_current_user_id(
     token: str = Depends(oauth2_scheme),
-) -> str:
+) -> UUID:
     try:
         payload = decode_access_token(token)
     except ExpiredSignatureError:
@@ -38,7 +40,10 @@ def get_current_user_id(
     if user_id is None:
         raise BadRequestError("Token inválido", field="token", source="cookie")
 
-    return user_id
+    try:
+        return UUID(user_id)
+    except ValueError:
+        raise BadRequestError("Token inválido", field="token", source="cookie")
 
 
 def get_me_dependency(

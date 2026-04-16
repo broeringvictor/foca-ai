@@ -5,8 +5,8 @@ from app.domain.entities.user import User
 from app.domain.repositories.user_repository import IUserRepository
 from app.application.dto.user.create_dto import CreateUserDTO, CreateUserResponse
 
-class CreateUser:
 
+class CreateUser:
     def __init__(self, repository: IUserRepository) -> None:
         self._repo = repository
 
@@ -46,8 +46,3 @@ class CreateUser:
             user_id=user.id,
             name=user.name,
         )
-
-
-
-
-

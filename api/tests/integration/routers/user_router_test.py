@@ -1,4 +1,3 @@
-import pytest
 
 
 def _payload(**overrides):
@@ -31,4 +30,3 @@ def test_create_user_rejects_password_mismatch(client):
     body = response.json()
     assert "detail" in body
     assert any("senhas" in err.get("message", "") for err in body["detail"])
-

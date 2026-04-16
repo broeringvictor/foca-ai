@@ -2,7 +2,10 @@ from fastapi import APIRouter, Response, status, Depends
 
 from app.api.dependecies.auth import get_authenticate_user_dependency
 from app.api.errors.schemas import ErrorResponse
-from app.application.dto.auth.authenticate_dto import AuthenticateDTO, AuthenticateResponse
+from app.application.dto.auth.authenticate_dto import (
+    AuthenticateDTO,
+    AuthenticateResponse,
+)
 from app.application.use_cases.auth.authenticate import AuthenticateUser
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -30,7 +33,7 @@ async def authenticate(
         key="access_token",
         value=f"Bearer {result.token}",
         httponly=True,
-        secure=False,   # TODO: mudar para True em produção
+        secure=False,  # TODO: mudar para True em produção
         samesite="lax",  # TODO: avaliar em produção
     )
 

@@ -65,10 +65,12 @@ class TestCreateUserIntegration:
         await session.flush()
 
         with pytest.raises(ConflictError, match="já está em uso"):
-            await use_case.execute(_make_input(
-                first_name="Maria",
-                last_name="Costa",
-            ))
+            await use_case.execute(
+                _make_input(
+                    first_name="Maria",
+                    last_name="Costa",
+                )
+            )
 
     @pytest.mark.asyncio
     async def test_rejects_password_mismatch(self, use_case: CreateUser):

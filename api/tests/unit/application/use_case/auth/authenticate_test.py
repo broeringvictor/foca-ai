@@ -51,7 +51,9 @@ class TestAuthenticateSuccess:
         assert result.token == "fake.jwt.token"
 
     @pytest.mark.asyncio
-    async def test_calls_repo_with_email(self, use_case: AuthenticateUser, repo: AsyncMock):
+    async def test_calls_repo_with_email(
+        self, use_case: AuthenticateUser, repo: AsyncMock
+    ):
         await use_case.execute(_make_input())
 
         repo.find_by_email_for_auth.assert_awaited_once_with("joao@example.com")
@@ -60,7 +62,7 @@ class TestAuthenticateSuccess:
     async def test_calls_service_with_user_data(
         self, use_case: AuthenticateUser, service: MagicMock
     ):
-        result = await use_case.execute(_make_input())
+        await use_case.execute(_make_input())
 
         service.generate_token_jwt.assert_called_once()
         call_kwargs = service.generate_token_jwt.call_args.kwargs
@@ -71,7 +73,9 @@ class TestAuthenticateSuccess:
 
 class TestAuthenticateUserNotFound:
     @pytest.mark.asyncio
-    async def test_raises_when_user_not_found(self, use_case: AuthenticateUser, repo: AsyncMock):
+    async def test_raises_when_user_not_found(
+        self, use_case: AuthenticateUser, repo: AsyncMock
+    ):
         repo.find_by_email_for_auth.return_value = None
 
         with pytest.raises(ValueError, match="Credenciais inválidas"):
@@ -91,7 +95,9 @@ class TestAuthenticateUserNotFound:
 
 class TestAuthenticateInactiveUser:
     @pytest.mark.asyncio
-    async def test_raises_when_user_inactive(self, use_case: AuthenticateUser, repo: AsyncMock):
+    async def test_raises_when_user_inactive(
+        self, use_case: AuthenticateUser, repo: AsyncMock
+    ):
         user = _make_user()
         user.is_active = False
         repo.find_by_email_for_auth.return_value = user
@@ -115,7 +121,9 @@ class TestAuthenticateInactiveUser:
 
 class TestAuthenticateWrongPassword:
     @pytest.mark.asyncio
-    async def test_raises_when_password_wrong(self, use_case: AuthenticateUser, repo: AsyncMock):
+    async def test_raises_when_password_wrong(
+        self, use_case: AuthenticateUser, repo: AsyncMock
+    ):
         with pytest.raises(ValueError, match="Credenciais inválidas"):
             await use_case.execute(_make_input(password="SenhaErrada@123"))
 

@@ -14,6 +14,7 @@ class Name(BaseModel):
         last_name: Sobrenome.
         value: Nome completo formatado (campo computado).
     """
+
     model_config = ConfigDict(frozen=True)
 
     first_name: str = Field(description="Primeiro nome do usuário")
@@ -42,11 +43,11 @@ class Name(BaseModel):
         if re.search(r"[\s'\-]{2,}", v):
             raise ValueError(f"{campo} não pode ter caracteres especiais consecutivos.")
         if v[0] in " '-" or v[-1] in " '-":
-            raise ValueError(f"{campo} não pode começar ou terminar com caractere especial.")
+            raise ValueError(
+                f"{campo} não pode começar ou terminar com caractere especial."
+            )
 
         return v.title()
-
-
 
     def __str__(self) -> str:
         return self.value

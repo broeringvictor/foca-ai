@@ -1,6 +1,3 @@
-
-
-
 def format_errors(errors: list) -> list:
     formatted = []
     for err in errors:

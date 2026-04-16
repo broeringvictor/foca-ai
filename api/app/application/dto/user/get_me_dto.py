@@ -11,5 +11,5 @@ class GetMeResponse(BaseModel):
     name: Name
     email: EmailStr
     is_active: bool
-    create_at: datetime
-    modified_at: datetime
+    created_at: datetime
+    updated_at: datetime
