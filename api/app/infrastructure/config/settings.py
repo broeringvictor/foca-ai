@@ -14,13 +14,19 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = "admin"
 
     ## 2. SECURITY
+    ### Password
     argon2_time_cost: int = 3  # iterações
     argon2_memory_cost: int = 65536  # (64 MB)
     argon2_parallelism: int = 2  # threads
 
+    ### JWT
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRE_MINUTES: int = 30
+
+
     # SECRETS MAP
-    ## 1. db
     POSTGRES_PASSWORD: str
+    JWT_KEY: str
 
     @property
     def password_hasher(self) -> PasswordHasher:
