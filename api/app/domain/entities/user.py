@@ -11,15 +11,14 @@ from app.domain.value_objects.recoverty_code import RecoveryCode
 class User(BaseModel):
     """Entidade de usuário do sistema.
 
-    Atributos:
-        id: Identificador único (UUID8, gerado automaticamente).
-        name: Nome completo (Value Object Name).
-        email: E-mail válido e normalizado em minúsculas.
-        password: Senha armazenada como hash Argon2 (Value Object Password).
-        is_active: Indica se o usuário está ativo.
-        recovery_code: Código de recuperação de senha (Value Object RecoveryCode).
-        create_at: Data de criação (UTC).
-        modified_at: Data da última modificação (UTC).
+    :ivar id: UUID8.
+    :ivar name: first name + last name(Value Object Name).
+    :ivar email: E-mail válido e normalizado em minúsculas.
+    :ivar password: Argon2 (Value Object Password).
+    :ivar is_active: Indica se o usuário está ativo.
+    :ivar recovery_code: Recuperação de senha, code + expired_at (Value Object RecoveryCode).
+    :ivar create_at: UTC.
+    :ivar modified_at: UTC.
     """
 
     id: UUID8 = Field(default_factory=uuid8)

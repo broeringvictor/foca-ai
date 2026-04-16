@@ -26,3 +26,11 @@ class UserModel:
     create_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     modified_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    study_notes: Mapped[list["StudyNoteModel"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        init=False,
+        default_factory=list,
+    )
