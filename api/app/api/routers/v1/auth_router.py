@@ -13,7 +13,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post(
     "/authenticate",
-    summary="Authenticate",
+    summary="authenticate",
     description="Autentica um usuário e retorna um token JWT via cookie HttpOnly",
     response_model=AuthenticateResponse,
     status_code=status.HTTP_200_OK,
