@@ -24,7 +24,16 @@ from app.infrastructure.services.categorization.schemas import ClassificationBat
 
 
 class QuestionCategorizationService(IQuestionCategorizationService):
-    """Pipeline deterministico: classifica em batches -> snapshot -> revisa desequilibrios."""
+    """
+    Pipeline deterministico: classifica em batches -> snapshot -> revisa desequilibrios.
+
+    This service uses a Large Language Model (LLM) to classify a batch of parsed OAB questions
+    into one of the standard `LawArea` values. The classification runs in two steps:
+    1. Initial classification in fixed-size batches using structured LLM output.
+    2. Imbalance review: if some legal areas have statistically anomalous distributions (excess or deficit),
+       the model selectively reviews low-confidence or potentially misclassified candidates to rebalance
+       the tags without forcing incorrect results.
+    """
 
     INITIAL_BATCH_SIZE = 6
     REVIEW_BATCH_SIZE = 6
@@ -32,9 +41,30 @@ class QuestionCategorizationService(IQuestionCategorizationService):
     MAX_REVIEW_CANDIDATES = 18
 
     def __init__(self, llm: BaseChatModel) -> None:
+        """
+        Initializes the QuestionCategorizationService.
+
+        Args:
+            llm (BaseChatModel): A LangChain chat model capable of generating structured output
+                                 matching the `ClassificationBatch` schema.
+        """
         self._structured_llm = llm.with_structured_output(ClassificationBatch)
 
     def classify(self, raw_exam: RawExam) -> list[Question]:
+        """
+        Classifies the questions included in a `RawExam` payload.
+
+        Constructs a complete set of application `Question` entities by iterating
+        over the initial predictions, performing distribution gap analysis via snapshots,
+        and conditionally running a review batch step for edge cases.
+
+        Args:
+            raw_exam (RawExam): The parsed exam payload containing unclassified raw questions.
+
+        Returns:
+            list[Question]: A list of Domain `Question` entities containing their matched `LawArea` and descriptive tags.
+        """
+
         if not raw_exam.questions:
             logger.info("categorization: no_questions edition={}", raw_exam.edition)
             return []
@@ -71,6 +101,19 @@ class QuestionCategorizationService(IQuestionCategorizationService):
     def _initial_classification(
         self, raw_exam: RawExam
     ) -> dict[int, ClassifiedQuestion]:
+        """
+        Executes the initial baseline classification loop for all questions.
+
+        Chunks the complete sorted list of questions into blocks of `INITIAL_BATCH_SIZE` to
+        safeguard token usage limitations and maps the predictions to `ClassifiedQuestion` objects.
+
+        Args:
+            raw_exam (RawExam): The parsed raw exam payload.
+
+        Returns:
+            dict[int, ClassifiedQuestion]: A dictionary mapping the question ID/number to its
+                                           resolved classification data.
+        """
         sorted_questions = sorted(raw_exam.questions, key=lambda q: q.number)
         assignments: dict[int, ClassifiedQuestion] = {}
 
@@ -79,6 +122,8 @@ class QuestionCategorizationService(IQuestionCategorizationService):
         for offset in range(0, len(sorted_questions), self.INITIAL_BATCH_SIZE):
             batch = sorted_questions[offset : offset + self.INITIAL_BATCH_SIZE]
             payload = [self._to_payload(q) for q in batch]
+
+            logger.info("categorization: classify_batch offset={} size={} total={}", offset, len(batch), len(sorted_questions))
 
             try:
                 batch_result = classify_chain.invoke({
@@ -108,6 +153,22 @@ class QuestionCategorizationService(IQuestionCategorizationService):
         assignments: dict[int, ClassifiedQuestion],
         snapshot: DistributionSnapshot,
     ) -> dict[int, ClassifiedQuestion]:
+        """
+        Submits candidates back to the LLM when there are anomalies in distribution logic.
+
+        Identifies questions mapped to skewed categories or those flagged with low-confidence
+        scores and delegates them to the `REVIEW_PROMPT` chain. Overwrites assignments for
+        approved reclassifications.
+
+        Args:
+            raw_exam (RawExam): The parsed raw exam payload.
+            assignments (dict[int, ClassifiedQuestion): The currently resolved map of questions.
+            snapshot (DistributionSnapshot): A domain value holding statistical distribution analysis.
+
+        Returns:
+            dict[int, ClassifiedQuestion]: An updated dictionary of classifications mapping containing
+                                           the newly reviewed overrides.
+        """
         review_numbers = self._select_review_candidates(assignments, snapshot)
         if not review_numbers:
             return assignments
@@ -130,6 +191,9 @@ class QuestionCategorizationService(IQuestionCategorizationService):
 
         for offset in range(0, len(to_review), self.REVIEW_BATCH_SIZE):
             batch = to_review[offset : offset + self.REVIEW_BATCH_SIZE]
+
+            logger.info("categorization.review: review_batch offset={} size={} total={}", offset, len(batch), len(to_review))
+
             payload = [
                 {
                     **self._to_payload(raw),
@@ -169,6 +233,19 @@ class QuestionCategorizationService(IQuestionCategorizationService):
         assignments: dict[int, ClassifiedQuestion],
         snapshot: DistributionSnapshot,
     ) -> list[int]:
+        """
+        Filters and selects priority items for the categorization review round based on target capacity.
+
+        Fetches candidates configured either in excessive distribution buckets or whose initial
+        model conviction fell under the `LOW_CONFIDENCE_THRESHOLD`, bounded by `MAX_REVIEW_CANDIDATES`.
+
+        Args:
+            assignments (dict[int, ClassifiedQuestion]): Current classification mappings.
+            snapshot (DistributionSnapshot): Information containing the `excess_areas`.
+
+        Returns:
+            list[int]: A deterministic list of sorted candidate question numbers.
+        """
         excess_set = set(snapshot.excess_areas)
         candidates = [
             item
@@ -184,6 +261,20 @@ class QuestionCategorizationService(IQuestionCategorizationService):
         raw_exam: RawExam,
         assignments: dict[int, ClassifiedQuestion],
     ) -> list[Question]:
+        """
+        Creates fully populated `Question` domain entities from categorizations.
+
+        Combines original `RawQuestion` values alongside their generated metadata such as
+        LawArea classifications, sources, and statistical confidence levels stored under standard tags.
+        Will default to a fallback state if unclassified data falls through the gaps.
+
+        Args:
+            raw_exam (RawExam): The pristine parsed payload.
+            assignments (dict[int, ClassifiedQuestion]): The established output mapping.
+
+        Returns:
+            list[Question]: Clean entity components ready for downstream processing.
+        """
         exam_id = uuid8()
         result: list[Question] = []
 
@@ -221,6 +312,15 @@ class QuestionCategorizationService(IQuestionCategorizationService):
 
     @staticmethod
     def _to_payload(raw: RawQuestion) -> dict:
+        """
+        Formats a unclassified Question down to a lightweight LLM mapping payload.
+
+        Args:
+            raw (RawQuestion): The model context object.
+
+        Returns:
+            dict: Simplified dictionary ready to be strictly converted to a JSON layout.
+        """
         return {
             "number": raw.number,
             "statement": raw.statement,
