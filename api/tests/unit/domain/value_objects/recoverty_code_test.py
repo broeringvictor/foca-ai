@@ -5,7 +5,6 @@ from app.domain.value_objects.recoverty_code import RecoveryCode
 
 
 class TestRecoveryCode:
-
     def test_create_recovery_code(self):
         before = datetime.now(timezone.utc)
         code = RecoveryCode()
@@ -32,9 +31,6 @@ class TestRecoveryCode:
         assert code.verify("codigo_errado") is False
 
     def test_verify_expired_raises(self):
-        code = RecoveryCode(
-            expires_at=datetime.now(timezone.utc) - timedelta(hours=1)
-        )
+        code = RecoveryCode(expires_at=datetime.now(timezone.utc) - timedelta(hours=1))
         with pytest.raises(ValueError, match="expirou"):
             code.verify(code.code)
-

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,7 +27,7 @@ async def use_case(session: AsyncSession) -> GetMe:
 class TestGetMeIntegration:
     @pytest.mark.asyncio
     async def test_returns_user_data(self, use_case: GetMe, user_on_db):
-        result = await use_case.execute(str(user_on_db.id))
+        result = await use_case.execute(user_on_db.id)
 
         assert result.user_id == user_on_db.id
         assert result.email == user_on_db.email
@@ -35,12 +37,12 @@ class TestGetMeIntegration:
 
     @pytest.mark.asyncio
     async def test_returns_timestamps(self, use_case: GetMe, user_on_db):
-        result = await use_case.execute(str(user_on_db.id))
+        result = await use_case.execute(user_on_db.id)
 
-        assert result.create_at is not None
-        assert result.modified_at is not None
+        assert result.created_at is not None
+        assert result.updated_at is not None
 
     @pytest.mark.asyncio
     async def test_raises_when_user_not_found(self, use_case: GetMe):
         with pytest.raises(NotFoundError, match="Usuário não encontrado"):
-            await use_case.execute("00000000-0000-0000-0000-000000000000")
+            await use_case.execute(UUID("00000000-0000-0000-0000-000000000000"))

@@ -58,7 +58,9 @@ class TestCreateUserSuccess:
         repo.save.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_checks_email_before_saving(self, use_case: CreateUser, repo: AsyncMock):
+    async def test_checks_email_before_saving(
+        self, use_case: CreateUser, repo: AsyncMock
+    ):
         await use_case.execute(_make_input())
 
         repo.find_by_email.assert_awaited_once_with("joao@example.com")
@@ -87,7 +89,9 @@ class TestCreateUserPasswordMismatch:
 
 class TestCreateUserDuplicateEmail:
     @pytest.mark.asyncio
-    async def test_raises_when_email_already_exists(self, use_case: CreateUser, repo: AsyncMock):
+    async def test_raises_when_email_already_exists(
+        self, use_case: CreateUser, repo: AsyncMock
+    ):
         repo.find_by_email.return_value = User.create(
             "Maria", "Costa", "Senha@1234", "joao@example.com"
         )
@@ -96,7 +100,9 @@ class TestCreateUserDuplicateEmail:
             await use_case.execute(_make_input())
 
     @pytest.mark.asyncio
-    async def test_does_not_save_when_email_exists(self, use_case: CreateUser, repo: AsyncMock):
+    async def test_does_not_save_when_email_exists(
+        self, use_case: CreateUser, repo: AsyncMock
+    ):
         repo.find_by_email.return_value = User.create(
             "Maria", "Costa", "Senha@1234", "joao@example.com"
         )

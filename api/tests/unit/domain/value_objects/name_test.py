@@ -2,16 +2,12 @@ import pytest
 from app.domain.value_objects.name import Name
 
 
-
 class TestCreateName:
-
-
     def test_normalize_with_valid_name(self):
         name = Name(first_name="geNtiL JOãO dA", last_name="Silva")
         assert name.first_name == "Gentil João Da"
         assert name.last_name == "Silva"
         assert name.value == "Gentil João Da Silva"
-
 
     def test_value_is_full_name(self):
         name = Name(first_name="Maria", last_name="Costa")
@@ -22,6 +18,7 @@ class TestCreateName:
         name = Name(first_name="Carlos", last_name="Pereira")
 
         assert str(name) == "Carlos Pereira"
+
 
 class TestNameFirstNameValidation:
     def test_empty_first_name_raises(self):
@@ -79,7 +76,6 @@ class TestNameLastNameValidation:
     def test_last_name_with_numbers_raises(self):
         with pytest.raises(ValueError, match="caracteres inválidos"):
             Name(first_name="João", last_name="Si1va")
-
 
 
 class TestNameCompositeNames:

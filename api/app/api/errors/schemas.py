@@ -13,4 +13,3 @@ class ErrorResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     detail: list[ErrorItem]
-

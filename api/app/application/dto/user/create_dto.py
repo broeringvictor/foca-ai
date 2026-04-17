@@ -8,7 +8,9 @@ class CreateUserDTO(BaseModel):
 
     first_name: str = Field(..., min_length=3, max_length=50, examples=["Gentil João"])
     last_name: str = Field(..., min_length=3, max_length=50, examples=["da Silva"])
-    email: EmailStr = Field(..., min_length=4, max_length=255, examples=["email@exemple.com"])
+    email: EmailStr = Field(
+        ..., min_length=4, max_length=255, examples=["email@exemple.com"]
+    )
     password: str = Field(
         ...,
         min_length=8,

@@ -16,14 +16,16 @@ class AuthRepository:
     async def find_by_email_for_auth(self, email: str) -> User | None:
         stmt = (
             select(UserModel)
-            .options(load_only(
-                UserModel.id,
-                UserModel.first_name,
-                UserModel.last_name,
-                UserModel.email,
-                UserModel.hashed_password,
-                UserModel.is_active,
-            ))
+            .options(
+                load_only(
+                    UserModel.id,
+                    UserModel.first_name,
+                    UserModel.last_name,
+                    UserModel.email,
+                    UserModel.hashed_password,
+                    UserModel.is_active,
+                )
+            )
             .where(UserModel.email == email)
         )
         result = await self._session.execute(stmt)

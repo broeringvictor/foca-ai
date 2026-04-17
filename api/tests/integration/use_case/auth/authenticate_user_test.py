@@ -45,23 +45,31 @@ class TestAuthenticateIntegration:
         assert isinstance(result.token, str)
 
     @pytest.mark.asyncio
-    async def test_raises_when_email_not_found(self, use_case: AuthenticateUser, user_on_db):
+    async def test_raises_when_email_not_found(
+        self, use_case: AuthenticateUser, user_on_db
+    ):
         with pytest.raises(BadRequestError, match="Credenciais inválidas"):
             await use_case.execute(_make_input(email="naoexiste@example.com"))
 
     @pytest.mark.asyncio
-    async def test_raises_when_password_wrong(self, use_case: AuthenticateUser, user_on_db):
+    async def test_raises_when_password_wrong(
+        self, use_case: AuthenticateUser, user_on_db
+    ):
         with pytest.raises(BadRequestError, match="Credenciais inválidas"):
             await use_case.execute(_make_input(password="SenhaErrada@123"))
 
     @pytest.mark.asyncio
-    async def test_token_contains_user_data(self, use_case: AuthenticateUser, user_on_db):
+    async def test_token_contains_user_data(
+        self, use_case: AuthenticateUser, user_on_db
+    ):
         import jwt
         from app.infrastructure.config.settings import get_settings
 
         config = get_settings()
         result = await use_case.execute(_make_input())
-        payload = jwt.decode(result.token, config.JWT_KEY, algorithms=[config.JWT_ALGORITHM])
+        payload = jwt.decode(
+            result.token, config.JWT_KEY, algorithms=[config.JWT_ALGORITHM]
+        )
 
         assert payload["sub"] == str(user_on_db.id)
         assert payload["email"] == "joao@example.com"

@@ -1,4 +1,3 @@
-import pytest
 from tests.factories.user import DEFAULT_PASSWORD
 
 
@@ -12,13 +11,16 @@ def _payload(**overrides):
 
 
 def _create_user(client):
-    client.post("/api/v1/users/", json={
-        "first_name": "Joao",
-        "last_name": "Silva",
-        "email": "joao@example.com",
-        "password": DEFAULT_PASSWORD,
-        "password_confirm": DEFAULT_PASSWORD,
-    })
+    client.post(
+        "/api/v1/users/",
+        json={
+            "first_name": "Joao",
+            "last_name": "Silva",
+            "email": "joao@example.com",
+            "password": DEFAULT_PASSWORD,
+            "password_confirm": DEFAULT_PASSWORD,
+        },
+    )
 
 
 class TestAuthenticateRouter:

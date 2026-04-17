@@ -33,8 +33,8 @@ class UserFactory(factory_boy.Factory):
             hashed_password=user.password.hashed_value,
             code=user.recovery_code.code,
             expires_at=user.recovery_code.expires_at,
-            create_at=user.create_at,
-            modified_at=user.modified_at,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
             is_active=user.is_active,
         )
 

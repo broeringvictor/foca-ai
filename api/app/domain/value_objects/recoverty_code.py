@@ -12,6 +12,7 @@ class RecoveryCode(BaseModel):
         code: Token seguro gerado automaticamente.
         expires_at: Data e hora de expiração do código (UTC).
     """
+
     model_config = ConfigDict(frozen=True)
 
     code: str = Field(
@@ -43,6 +44,3 @@ class RecoveryCode(BaseModel):
         if self.is_expired:
             raise ValueError("O código de recuperação expirou.")
         return secrets.compare_digest(self.code, code)
-
-
-

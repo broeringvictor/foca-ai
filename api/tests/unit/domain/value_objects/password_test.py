@@ -2,7 +2,6 @@ import pytest
 from app.domain.value_objects.password import Password
 
 
-
 @pytest.fixture
 def valid_password() -> Password:
     return Password.create("senha_valida_123")

@@ -1,4 +1,3 @@
-import datetime
 
 from argon2.exceptions import VerifyMismatchError
 from pydantic import BaseModel, ConfigDict, StrictBool, Field
@@ -6,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, StrictBool, Field
 from app.infrastructure.config.settings import get_settings
 
 _hasher = get_settings().password_hasher
+
 
 class Password(BaseModel):
     """Senha do usuário.
@@ -16,6 +16,7 @@ class Password(BaseModel):
     Atributos:
         hashed_value: Hash da senha gerado pelo Argon2.
     """
+
     model_config = ConfigDict(frozen=True)
     hashed_value: str = Field(description="Hash da senha gerado pelo Argon2")
 
@@ -66,5 +67,3 @@ class Password(BaseModel):
             Instância de Password com o hash fornecido.
         """
         return cls(hashed_value=hashed_value)
-
-

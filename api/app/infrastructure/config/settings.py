@@ -3,6 +3,7 @@ from functools import lru_cache
 from argon2 import PasswordHasher
 from sqlalchemy.engine import URL
 
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
@@ -23,6 +24,11 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 30
 
+    ## 3. UPLOAD
+    ### Markdown
+    MAX_FILENAME_LEN: int = 255
+    MAX_MARKDOWN_CONTENT_LEN: int = 20_000
+    MAX_MARKDOWN_BYTES: int = 120_000
 
     # SECRETS MAP
     POSTGRES_PASSWORD: str
