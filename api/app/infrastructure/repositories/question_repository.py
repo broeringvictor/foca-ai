@@ -39,6 +39,11 @@ class QuestionRepository:
         stmt = delete(QuestionModel).where(QuestionModel.id == question_id)
         await self._session.execute(stmt)
 
+    async def delete_all_by_exam_id(self, exam_id: UUID) -> int:
+        stmt = delete(QuestionModel).where(QuestionModel.exam_id == exam_id)
+        result = await self._session.execute(stmt)
+        return int(result.rowcount or 0)
+
     # ── busca ─────────────────────────────────────────────────────────────────
 
     async def find_by_id(self, question_id: UUID) -> Question | None:
