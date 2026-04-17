@@ -6,6 +6,7 @@ from app.application.use_cases.exam.delete import DeleteExam
 from app.application.use_cases.exam.get import GetExam, ListExams
 from app.application.use_cases.exam.update import UpdateExam
 from app.infrastructure.repositories.exam_repository import ExamRepository
+from app.infrastructure.repositories.question_repository import QuestionRepository
 from app.infrastructure.session import get_session
 
 
@@ -24,7 +25,10 @@ def get_update_exam_dependency(
 def get_delete_exam_dependency(
     session: AsyncSession = Depends(get_session),
 ) -> DeleteExam:
-    return DeleteExam(repository=ExamRepository(session))
+    return DeleteExam(
+        repository=ExamRepository(session),
+        question_repository=QuestionRepository(session),
+    )
 
 
 def get_exam_dependency(
