@@ -2,7 +2,7 @@ import json
 
 from app.domain.enums.law_area import LawArea
 from app.domain.value_objects.raw_exam import RawExam, RawQuestion
-from app.infrastructure.services.categorization.service import (
+from app.infrastructure.services.question_categorization_service.service import (
     QuestionCategorizationService,
 )
 
@@ -70,7 +70,7 @@ class TestQuestionCategorizationService:
         pass
 
     def test_classify_returns_all_questions_with_fallback(self):
-        from app.infrastructure.services.categorization.schemas import ClassificationBatch
+        from app.infrastructure.services.question_categorization_service.schemas import ClassificationBatch
 
         class _FakeLLMStructured:
             def with_structured_output(self, schema):

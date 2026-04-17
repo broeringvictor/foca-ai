@@ -15,12 +15,12 @@ from app.domain.value_objects.classified_question import (
     DistributionSnapshot,
 )
 from app.domain.value_objects.raw_exam import RawExam, RawQuestion
-from app.infrastructure.services.categorization.distribution import build_snapshot
-from app.infrastructure.services.categorization.prompts import (
+from app.infrastructure.services.question_categorization_service.distribution import build_snapshot
+from app.infrastructure.services.question_categorization_service.prompts import (
     CLASSIFY_PROMPT,
     REVIEW_PROMPT,
 )
-from app.infrastructure.services.categorization.schemas import ClassificationBatch
+from app.infrastructure.services.question_categorization_service.schemas import ClassificationBatch
 
 
 class QuestionCategorizationService(IQuestionCategorizationService):
@@ -139,6 +139,7 @@ class QuestionCategorizationService(IQuestionCategorizationService):
                     area=item.area,
                     confidence=item.confidence,
                     source="initial",
+                    tags=getattr(item, 'tags', []),
                 )
 
         missing = [q.number for q in sorted_questions if q.number not in assignments]
@@ -224,6 +225,7 @@ class QuestionCategorizationService(IQuestionCategorizationService):
                     area=item.area,
                     confidence=item.confidence,
                     source="review",
+                    tags=getattr(item, 'tags', []),
                 )
 
         return assignments
@@ -284,14 +286,17 @@ class QuestionCategorizationService(IQuestionCategorizationService):
                 area = LawArea.CIVIL
                 confidence = 0.0
                 source = "unclassified"
+                tags = []
             else:
                 area = data.area
                 confidence = data.confidence
                 source = data.source
+                tags = data.tags
 
             result.append(
                 Question.create(
                     exam_id=exam_id,
+                    number=raw.number,
                     statement=raw.statement[:1500],
                     area=area,
                     correct=Alternative.A,
@@ -299,12 +304,9 @@ class QuestionCategorizationService(IQuestionCategorizationService):
                     alternative_b=raw.alternative_b[:1000],
                     alternative_c=raw.alternative_c[:1000],
                     alternative_d=raw.alternative_d[:1000],
-                    tags=[
-                        "auto-categorized",
-                        f"question_number:{raw.number}",
-                        f"confidence:{confidence:.2f}",
-                        f"source:{source}",
-                    ],
+                    tags=tags,
+                    confidence=confidence,
+                    source=source,
                 )
             )
 

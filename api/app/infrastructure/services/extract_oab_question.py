@@ -73,8 +73,9 @@ class ExtractOABQuestionService:
         left_bbox = (0, top, split, bottom)
         right_bbox = (split, top, page.width, bottom)
 
-        left = page.crop(left_bbox).extract_text() or ""
-        right = page.crop(right_bbox).extract_text() or ""
+        kwargs = {"x_tolerance": 1.5, "y_tolerance": 3}
+        left = page.crop(left_bbox).extract_text(**kwargs) or ""
+        right = page.crop(right_bbox).extract_text(**kwargs) or ""
         return f"{left}\n{right}"
 
     def _extract_questions_text(self, pdf, options: ExtractionOptions) -> str:

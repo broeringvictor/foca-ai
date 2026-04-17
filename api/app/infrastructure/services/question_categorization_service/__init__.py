@@ -1,4 +1,4 @@
-from app.infrastructure.services.categorization.service import (
+from app.infrastructure.services.question_categorization_service.service import (
     QuestionCategorizationService,
 )
 
