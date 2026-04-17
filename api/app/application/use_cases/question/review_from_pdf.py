@@ -81,8 +81,6 @@ class ReviewQuestionsFromPDF:
         )
 
         return ReviewQuestionsFromPDFResponse(
-            exam=raw_exam,
-            questions=questions,
             extracted_questions_count=len(raw_exam.questions),
             categorized_questions_count=len(questions),
             area_validation=area_validation,
