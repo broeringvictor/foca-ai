@@ -15,14 +15,10 @@ services:
       JWT_ALGORITHM: "HS256"
       JWT_EXPIRE_MINUTES: 30
 
-      LLM__PROVIDER: anthropic
-      LLM__MODEL: claude-3-5-sonnet-latest
       LLM__TEMPERATURE: 0.7
       LLM__TIMEOUT: 30
       LLM__MAX_TOKENS: 1000
       LLM__MAX_RETRIES: 6
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
   db:
     image: postgres:18
     restart: unless-stopped
