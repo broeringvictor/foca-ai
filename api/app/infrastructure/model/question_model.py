@@ -24,7 +24,6 @@ class QuestionModel:
         ForeignKey("exam.id", ondelete="CASCADE"),
         nullable=False,
     )
-    number: Mapped[int] = mapped_column(nullable=False, default=1)
     statement: Mapped[str] = mapped_column(String(1500), nullable=False)
     area: Mapped[str] = mapped_column(String(40), nullable=False)
     correct: Mapped[str] = mapped_column(String(1), nullable=False)
@@ -35,6 +34,7 @@ class QuestionModel:
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
+    number: Mapped[int] = mapped_column(nullable=False, default=1)
     confidence: Mapped[float] = mapped_column(nullable=False, default=0.0)
     source: Mapped[str] = mapped_column(String(50), nullable=False, default="unclassified")
 

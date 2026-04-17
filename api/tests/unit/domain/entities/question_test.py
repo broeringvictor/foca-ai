@@ -17,6 +17,7 @@ class TestCreateQuestion:
         exam_id = _exam_id()
         question = Question.create(
             exam_id=exam_id,
+            number=1,
             statement="Qual a cor do cavalo branco de Napoleão?",
             area=LawArea.ETHICS,
             correct=Alternative.A,
@@ -40,6 +41,7 @@ class TestCreateQuestion:
     def test_creates_with_only_required_fields(self):
         question = Question.create(
             exam_id=_exam_id(),
+            number=1,
             statement="Enunciado de teste",
             area=LawArea.CONSTITUTIONAL,
             correct=Alternative.B,
@@ -54,6 +56,7 @@ class TestCreateQuestion:
     def test_tags_none_becomes_empty_list(self):
         question = Question.create(
             exam_id=_exam_id(),
+            number=1,
             statement="Enunciado de teste",
             area=LawArea.CONSTITUTIONAL,
             correct=Alternative.B,
@@ -72,6 +75,7 @@ class TestQuestionValidation:
         with pytest.raises(ValidationError):
             Question.create(
                 exam_id=_exam_id(),
+            number=1,
                 statement="abc",
                 area=LawArea.ETHICS,
                 correct=Alternative.A,
@@ -85,6 +89,7 @@ class TestQuestionValidation:
         with pytest.raises(ValidationError):
             Question.create(
                 exam_id=_exam_id(),
+            number=1,
                 statement="a" * 1501,
                 area=LawArea.ETHICS,
                 correct=Alternative.A,
@@ -98,6 +103,7 @@ class TestQuestionValidation:
         with pytest.raises(ValidationError):
             Question.create(
                 exam_id=_exam_id(),
+            number=1,
                 statement="Pergunta?",
                 area=LawArea.ETHICS,
                 correct=Alternative.A,
@@ -111,6 +117,7 @@ class TestQuestionValidation:
         with pytest.raises(ValidationError):
             Question.create(
                 exam_id="not-a-uuid",
+                number=1,
                 statement="Pergunta?",
                 area=LawArea.ETHICS,
                 correct=Alternative.A,

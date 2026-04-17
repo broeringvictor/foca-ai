@@ -88,4 +88,4 @@ class TestQuestionCategorizationService:
 
         assert len(result) == 3
         assert all(question.area == LawArea.CIVIL for question in result)
-        assert all(any(tag.startswith("source:") for tag in question.tags) for question in result)
+        assert all(question.source == "unclassified" for question in result)
