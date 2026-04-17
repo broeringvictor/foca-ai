@@ -20,7 +20,7 @@ class ClassificationResult(BaseModel):
     )
     tags: list[str] = Field(
         default_factory=list,
-        description="Lista de 3 a 5 tags ou assuntos especificos relacionados a questao (ex: 'reclamacao trabalhista', 'verbas rescisorias', 'prescricao').",
+        description="Lista de 3 a 5 tags ou assuntos especificos relacionados a questao. Cada tag deve ter no maximo 50 caracteres (ex: 'reclamacao trabalhista', 'verbas rescisorias').",
     )
     reasoning: str = Field(
         default="",

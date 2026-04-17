@@ -3,7 +3,7 @@ from typing import Annotated
 from pydantic import AfterValidator
 
 MAX_TAGS = 20
-MAX_TAG_LEN = 30
+MAX_TAG_LEN = 50
 
 
 def _normalize_tags(raw: list[str]) -> list[str]:
@@ -12,7 +12,7 @@ def _normalize_tags(raw: list[str]) -> list[str]:
     Regras:
         - Descarta tags vazias após ``strip``.
         - Deduplica case-insensitive (preserva a primeira ocorrência).
-        - Cada tag deve ter no máximo 30 caracteres.
+        - Cada tag deve ter no máximo 50 caracteres.
         - Máximo de 20 tags.
     """
 
@@ -25,7 +25,7 @@ def _normalize_tags(raw: list[str]) -> list[str]:
         if not tag:
             continue
         if len(tag) > MAX_TAG_LEN:
-            raise ValueError("Tag excede 30 caracteres")
+            raise ValueError(f"Tag excede {MAX_TAG_LEN} caracteres")
         lowered = tag.lower()
         if lowered in seen:
             continue
