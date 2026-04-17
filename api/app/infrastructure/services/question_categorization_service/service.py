@@ -3,6 +3,7 @@ from uuid import uuid8
 
 from langchain_core.language_models import BaseChatModel
 from loguru import logger
+from pydantic import UUID8
 
 from app.domain.entities.question import Question
 from app.domain.enums.alternatives import Alternative
@@ -50,7 +51,9 @@ class QuestionCategorizationService(IQuestionCategorizationService):
         """
         self._structured_llm = llm.with_structured_output(ClassificationBatch)
 
-    def classify(self, raw_exam: RawExam) -> list[Question]:
+    def classify(
+        self, raw_exam: RawExam, exam_id: UUID8 | None = None
+    ) -> list[Question]:
         """
         Classifies the questions included in a `RawExam` payload.
 
@@ -60,6 +63,7 @@ class QuestionCategorizationService(IQuestionCategorizationService):
 
         Args:
             raw_exam (RawExam): The parsed exam payload containing unclassified raw questions.
+            exam_id (UUID8 | None): Optional exam ID to associate with the questions.
 
         Returns:
             list[Question]: A list of Domain `Question` entities containing their matched `LawArea` and descriptive tags.
@@ -94,7 +98,7 @@ class QuestionCategorizationService(IQuestionCategorizationService):
                 [area.value for area in snapshot.deficit_areas],
             )
 
-        questions = self._build_questions(raw_exam, assignments)
+        questions = self._build_questions(raw_exam, assignments, exam_id=exam_id)
         logger.info("categorization: done questions={}", len(questions))
         return questions
 
@@ -262,6 +266,7 @@ class QuestionCategorizationService(IQuestionCategorizationService):
         self,
         raw_exam: RawExam,
         assignments: dict[int, ClassifiedQuestion],
+        exam_id: UUID8 | None = None,
     ) -> list[Question]:
         """
         Creates fully populated `Question` domain entities from categorizations.
@@ -273,11 +278,12 @@ class QuestionCategorizationService(IQuestionCategorizationService):
         Args:
             raw_exam (RawExam): The pristine parsed payload.
             assignments (dict[int, ClassifiedQuestion]): The established output mapping.
+            exam_id (UUID8 | None): Optional exam ID to associate with the questions.
 
         Returns:
             list[Question]: Clean entity components ready for downstream processing.
         """
-        exam_id = uuid8()
+        exam_id = exam_id or uuid8()
         result: list[Question] = []
 
         for raw in sorted(raw_exam.questions, key=lambda q: q.number):
