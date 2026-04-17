@@ -5,6 +5,9 @@ from app.application.dto.question.review_from_pdf_dto import (
     ReviewQuestionsFromPDFResponse,
 )
 from app.application.use_cases.question.area_validation import build_area_validation
+from app.domain.entities.exam import Exam
+from app.domain.repositories.exam_repository import IExamRepository
+from app.domain.repositories.question_repository import IQuestionRepository
 from app.domain.services.oab_extractor_service import IOABExtractorService
 from app.domain.services.question_categorization_service import (
     IQuestionCategorizationService,
@@ -17,9 +20,13 @@ class ReviewQuestionsFromPDF:
         self,
         extractor: IOABExtractorService,
         categorizer: IQuestionCategorizationService,
+        exam_repository: IExamRepository,
+        question_repository: IQuestionRepository,
     ) -> None:
         self._extractor = extractor
         self._categorizer = categorizer
+        self._exam_repository = exam_repository
+        self._question_repository = question_repository
 
     async def execute(
         self, pdf_bytes: bytes, options: ExtractionOptions
@@ -33,7 +40,7 @@ class ReviewQuestionsFromPDF:
         )
 
         try:
-            exam = self._extractor.extract(pdf_bytes=pdf_bytes, options=options)
+            raw_exam = self._extractor.extract(pdf_bytes=pdf_bytes, options=options)
         except ValueError as exc:
             logger.warning(f"question.review_from_pdf: extraction_failed reason={exc}")
             raise BadRequestError(
@@ -42,26 +49,41 @@ class ReviewQuestionsFromPDF:
 
         logger.info(
             "question.review_from_pdf: extracted edition={} exam_type={} color={} raw_questions={}",
-            exam.edition,
-            exam.exam_type,
-            exam.color,
-            len(exam.questions),
+            raw_exam.edition,
+            raw_exam.exam_type,
+            raw_exam.color,
+            len(raw_exam.questions),
         )
 
-        questions = self._categorizer.classify(exam)
+        # 1. Persist the Exam entity
+        exam = Exam.create(
+            name=raw_exam.name,
+            edition=raw_exam.edition,
+            year=2024,  # Default or extract from name/metadata
+            board="FGV",
+        )
+        await self._exam_repository.save(exam)
+
+        # 2. Categorize and Persist Questions
+        questions = self._categorizer.classify(raw_exam, exam_id=exam.id)
+
+        for question in questions:
+            await self._question_repository.save(question)
+
         area_validation = build_area_validation(questions)
 
         logger.info(
-            "question.review_from_pdf: categorized questions={} within_expected_distribution={} distorted_areas={}",
+            "question.review_from_pdf: categorized questions={} within_expected_distribution={} distorted_areas={} exam_id={}",
             len(questions),
             area_validation.is_within_expected_distribution,
             area_validation.distorted_areas,
+            exam.id,
         )
 
         return ReviewQuestionsFromPDFResponse(
-            exam=exam,
+            exam=raw_exam,
             questions=questions,
-            extracted_questions_count=len(exam.questions),
+            extracted_questions_count=len(raw_exam.questions),
             categorized_questions_count=len(questions),
             area_validation=area_validation,
         )

@@ -14,6 +14,7 @@ from app.application.use_cases.question.update import UpdateQuestion
 from app.domain.services.oab_extractor_service import IOABExtractorService
 from app.domain.services.question_categorization_service import IQuestionCategorizationService
 from app.infrastructure.llm import get_llm_model
+from app.infrastructure.repositories.exam_repository import ExamRepository
 from app.infrastructure.repositories.question_repository import QuestionRepository
 from app.infrastructure.services.extract_oab_question import ExtractOABQuestionService
 from app.infrastructure.services.question_categorization_service import QuestionCategorizationService
@@ -122,10 +123,14 @@ def get_oab_extractor_service_dependency() -> IOABExtractorService:
     return ExtractOABQuestionService()
 
 
-def get_review_questions_from_pdf_dependency() -> ReviewQuestionsFromPDF:
+def get_review_questions_from_pdf_dependency(
+    session: AsyncSession = Depends(get_session),
+) -> ReviewQuestionsFromPDF:
     return ReviewQuestionsFromPDF(
         extractor=get_oab_extractor_service_dependency(),
         categorizer=get_question_categorization_service_dependency(),
+        exam_repository=ExamRepository(session),
+        question_repository=QuestionRepository(session),
     )
 
 
