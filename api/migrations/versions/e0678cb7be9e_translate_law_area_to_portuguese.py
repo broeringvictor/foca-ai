@@ -66,10 +66,40 @@ def _rebuild_question_detail_view() -> None:
     )
 
 
+def _rebuild_exam_stats_view() -> None:
+    op.execute("DROP VIEW IF EXISTS v_exam_stats")
+    op.execute(
+        """
+        CREATE VIEW v_exam_stats AS
+        SELECT
+            e.id      AS exam_id,
+            e.name,
+            e.edition,
+            e.year,
+            COALESCE(agg.total_questions, 0) AS total_questions,
+            agg.questions_by_area
+        FROM exam e
+        LEFT JOIN (
+            SELECT
+                exam_id,
+                COUNT(*) AS total_questions,
+                jsonb_object_agg(area, cnt) AS questions_by_area
+            FROM (
+                SELECT exam_id, area, COUNT(*) AS cnt
+                FROM question
+                GROUP BY exam_id, area
+            ) per_area
+            GROUP BY exam_id
+        ) agg ON agg.exam_id = e.id;
+        """
+    )
+
+
 def upgrade() -> None:
     """Widen area column to 40 chars and migrate values from EN to PT."""
     # The view depends on `question.area`, so we drop it before altering the column.
     op.execute("DROP VIEW IF EXISTS v_question_detail")
+    op.execute("DROP VIEW IF EXISTS v_exam_stats")
 
     op.alter_column(
         "question",
@@ -87,11 +117,13 @@ def upgrade() -> None:
         )
 
     _rebuild_question_detail_view()
+    _rebuild_exam_stats_view()
 
 
 def downgrade() -> None:
     """Revert Portuguese values back to English and shrink column to 30 chars."""
     op.execute("DROP VIEW IF EXISTS v_question_detail")
+    op.execute("DROP VIEW IF EXISTS v_exam_stats")
 
     for old_value, new_value in _AREA_EN_TO_PT.items():
         op.execute(
@@ -109,3 +141,4 @@ def downgrade() -> None:
     )
 
     _rebuild_question_detail_view()
+    _rebuild_exam_stats_view()

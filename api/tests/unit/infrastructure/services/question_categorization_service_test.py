@@ -79,6 +79,9 @@ class TestQuestionCategorizationService:
             def invoke(self, input, **kwargs):
                 return ClassificationBatch(results=[])
 
+            def __call__(self, *args, **kwargs):
+                return ClassificationBatch(results=[])
+
         service = QuestionCategorizationService(llm=_FakeLLMStructured())
 
         result = service.classify(_make_raw_exam())
