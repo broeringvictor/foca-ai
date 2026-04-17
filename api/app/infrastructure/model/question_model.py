@@ -24,6 +24,7 @@ class QuestionModel:
         ForeignKey("exam.id", ondelete="CASCADE"),
         nullable=False,
     )
+    number: Mapped[int] = mapped_column(nullable=False, default=1)
     statement: Mapped[str] = mapped_column(String(1500), nullable=False)
     area: Mapped[str] = mapped_column(String(40), nullable=False)
     correct: Mapped[str] = mapped_column(String(1), nullable=False)
@@ -33,6 +34,9 @@ class QuestionModel:
     alternative_d: Mapped[str] = mapped_column(String(1000), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+    confidence: Mapped[float] = mapped_column(nullable=False, default=0.0)
+    source: Mapped[str] = mapped_column(String(50), nullable=False, default="unclassified")
 
     tags: Mapped[list[str]] = mapped_column(
         JSONB().with_variant(JSON(), "sqlite"),

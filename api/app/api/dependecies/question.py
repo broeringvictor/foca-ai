@@ -16,7 +16,7 @@ from app.domain.services.question_categorization_service import IQuestionCategor
 from app.infrastructure.llm import get_llm_model
 from app.infrastructure.repositories.question_repository import QuestionRepository
 from app.infrastructure.services.extract_oab_question import ExtractOABQuestionService
-from app.infrastructure.services.categorization import QuestionCategorizationService
+from app.infrastructure.services.question_categorization_service import QuestionCategorizationService
 from app.infrastructure.session import get_session
 
 ALLOWED_PDF_EXTENSIONS = {".pdf"}
