@@ -4,6 +4,7 @@ from fastapi import Depends, File, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.errors.exceptions import BadRequestError
+from app.application.use_cases.question.add_answer_key import AddAnswerKeyToExam
 from app.application.use_cases.question.categorize import CategorizeQuestions
 from app.application.use_cases.question.check_answer import CheckAnswer
 from app.application.use_cases.question.create import CreateQuestion
@@ -16,6 +17,7 @@ from app.domain.services.question_categorization_service import IQuestionCategor
 from app.infrastructure.llm import get_llm_model
 from app.infrastructure.repositories.exam_repository import ExamRepository
 from app.infrastructure.repositories.question_repository import QuestionRepository
+from app.infrastructure.services.extract_oab_answer_key import ExtractOABAnswerKeyService
 from app.infrastructure.services.extract_oab_question import ExtractOABQuestionService
 from app.infrastructure.services.question_categorization_service import QuestionCategorizationService
 from app.infrastructure.session import get_session
@@ -131,6 +133,17 @@ def get_review_questions_from_pdf_dependency(
         categorizer=get_question_categorization_service_dependency(),
         exam_repository=ExamRepository(session),
         question_repository=QuestionRepository(session),
+        session=session,
+    )
+
+
+def get_add_answer_key_to_exam_dependency(
+    session: AsyncSession = Depends(get_session),
+) -> AddAnswerKeyToExam:
+    return AddAnswerKeyToExam(
+        exam_repository=ExamRepository(session),
+        question_repository=QuestionRepository(session),
+        answer_key_service=ExtractOABAnswerKeyService(),
         session=session,
     )
 

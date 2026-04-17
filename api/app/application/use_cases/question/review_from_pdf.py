@@ -64,6 +64,8 @@ class ReviewQuestionsFromPDF:
             edition=raw_exam.edition,
             year=2024,  # Default or extract from name/metadata
             board="FGV",
+            exam_type=raw_exam.exam_type,
+            color=raw_exam.color,
         )
         await self._exam_repository.save(exam)
 

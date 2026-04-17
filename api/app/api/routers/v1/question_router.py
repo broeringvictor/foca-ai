@@ -3,7 +3,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Form, status
 
 from app.api.dependecies.auth import get_current_user_id
-from app.api.dependecies.question import (    get_categorize_questions_dependency,
+from app.api.dependecies.question import (
+    get_add_answer_key_to_exam_dependency,
+    get_categorize_questions_dependency,
     get_check_answer_dependency,
     get_create_question_dependency,
     get_delete_question_dependency,
@@ -14,6 +16,10 @@ from app.api.dependecies.question import (    get_categorize_questions_dependenc
     list_questions_by_exam_dependency,
 )
 from app.api.errors.schemas import ErrorResponse
+from app.application.dto.question.add_answer_key_dto import (
+    AddAnswerKeyToExamDTO,
+    AddAnswerKeyToExamResponse,
+)
 from app.application.dto.question.categorize_dto import (
     CategorizeQuestionsDTO,
     CategorizeQuestionsResponse,
@@ -172,6 +178,26 @@ async def categorize_questions(
     use_case: CategorizeQuestions = Depends(get_categorize_questions_dependency),
 ) -> CategorizeQuestionsResponse:
     return await use_case.execute(body)
+
+
+@router.post(
+    "/exam/{exam_id}/add-answer-key",
+    summary="add answer key",
+    description="Importa o gabarito oficial de um PDF e atualiza as questões de um exame.",
+    response_model=AddAnswerKeyToExamResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        404: {"model": ErrorResponse, "description": "Exame não encontrado"},
+        400: {"model": ErrorResponse, "description": "Erro no processamento do PDF"},
+    },
+)
+async def add_answer_key(
+    exam_id: UUID,
+    pdf_bytes: bytes = Depends(get_pdf_bytes_for_review),
+    use_case: AddAnswerKeyToExam = Depends(get_add_answer_key_to_exam_dependency),
+) -> AddAnswerKeyToExamResponse:
+    input_data = AddAnswerKeyToExamDTO(exam_id=exam_id, pdf_bytes=pdf_bytes)
+    return await use_case.execute(input_data)
 
 
 @router.post(

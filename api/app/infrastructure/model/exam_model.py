@@ -23,6 +23,8 @@ class ExamModel:
     edition: Mapped[int] = mapped_column(Integer, nullable=False)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     board: Mapped[str] = mapped_column(String(100), nullable=False)
+    exam_type: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    color: Mapped[str] = mapped_column(String(30), nullable=False, default="BRANCA")
     first_phase_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     second_phase_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
