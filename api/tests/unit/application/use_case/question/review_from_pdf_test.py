@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 from app.api.errors.exceptions import BadRequestError
 from app.application.use_cases.question.review_from_pdf import ReviewQuestionsFromPDF
@@ -37,8 +37,38 @@ def categorizer() -> MagicMock:
 
 
 @pytest.fixture
-def use_case(extractor: MagicMock, categorizer: MagicMock) -> ReviewQuestionsFromPDF:
-    return ReviewQuestionsFromPDF(extractor=extractor, categorizer=categorizer)
+def exam_repository() -> AsyncMock:
+    mock = AsyncMock()
+    return mock
+
+
+@pytest.fixture
+def question_repository() -> AsyncMock:
+    mock = AsyncMock()
+    return mock
+
+
+@pytest.fixture
+def session() -> AsyncMock:
+    mock = AsyncMock()
+    return mock
+
+
+@pytest.fixture
+def use_case(
+    extractor: MagicMock,
+    categorizer: MagicMock,
+    exam_repository: AsyncMock,
+    question_repository: AsyncMock,
+    session: AsyncMock,
+) -> ReviewQuestionsFromPDF:
+    return ReviewQuestionsFromPDF(
+        extractor=extractor,
+        categorizer=categorizer,
+        exam_repository=exam_repository,
+        question_repository=question_repository,
+        session=session,
+    )
 
 
 class TestReviewQuestionsFromPDF:
@@ -48,16 +78,18 @@ class TestReviewQuestionsFromPDF:
         use_case: ReviewQuestionsFromPDF,
         extractor: MagicMock,
         categorizer: MagicMock,
+        exam_repository: AsyncMock,
+        question_repository: AsyncMock,
+        session: AsyncMock,
         options: ExtractionOptions,
     ):
         result = await use_case.execute(pdf_bytes=b"pdf", options=options)
 
         extractor.extract.assert_called_once_with(pdf_bytes=b"pdf", options=options)
         categorizer.classify.assert_called_once()
-        assert result.extracted_questions_count == 0
-        assert result.categorized_questions_count == 0
-        assert result.area_validation.total_questions == 0
-        assert result.area_validation.counts_by_area
+        exam_repository.save.assert_called_once()
+        question_repository.save.assert_not_called()
+        session.commit.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_execute_raises_bad_request_when_extractor_fails(
