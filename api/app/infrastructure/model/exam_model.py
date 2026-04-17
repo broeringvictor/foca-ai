@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, UTC
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -23,12 +23,23 @@ class ExamModel:
     edition: Mapped[int] = mapped_column(Integer, nullable=False)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     board: Mapped[str] = mapped_column(String(100), nullable=False)
+    
+    # Todos os campos daqui para baixo precisam de default para não quebrar a dataclass
+    first_phase_date: Mapped[date | None] = mapped_column(Date, nullable=True, default=None)
+    second_phase_date: Mapped[date | None] = mapped_column(Date, nullable=True, default=None)
+    
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        default_factory=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        default_factory=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC)
+    )
+
     exam_type: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     color: Mapped[str] = mapped_column(String(30), nullable=False, default="BRANCA")
-    first_phase_date: Mapped[date | None] = mapped_column(Date, nullable=True)
-    second_phase_date: Mapped[date | None] = mapped_column(Date, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     questions: Mapped[list["QuestionModel"]] = relationship(
         back_populates="exam",

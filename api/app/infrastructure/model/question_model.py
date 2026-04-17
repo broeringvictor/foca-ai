@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String
+from sqlalchemy import JSON, DateTime, ForeignKey, String, Integer, Float
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -31,11 +31,20 @@ class QuestionModel:
     alternative_b: Mapped[str] = mapped_column(String(1000), nullable=False)
     alternative_c: Mapped[str] = mapped_column(String(1000), nullable=False)
     alternative_d: Mapped[str] = mapped_column(String(1000), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    
+    # Defaults ao final
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        default_factory=lambda: datetime.now(UTC)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        default_factory=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC)
+    )
 
-    number: Mapped[int] = mapped_column(nullable=False, default=1)
-    confidence: Mapped[float] = mapped_column(nullable=False, default=0.0)
+    number: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     source: Mapped[str] = mapped_column(String(50), nullable=False, default="unclassified")
 
     tags: Mapped[list[str]] = mapped_column(

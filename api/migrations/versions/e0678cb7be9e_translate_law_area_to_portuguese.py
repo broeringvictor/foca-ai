@@ -98,8 +98,8 @@ def _rebuild_exam_stats_view() -> None:
 def upgrade() -> None:
     """Widen area column to 40 chars and migrate values from EN to PT."""
     # The view depends on `question.area`, so we drop it before altering the column.
-    op.execute("DROP VIEW IF EXISTS v_question_detail")
-    op.execute("DROP VIEW IF EXISTS v_exam_stats")
+    op.execute("DROP VIEW IF EXISTS v_question_detail CASCADE")
+    op.execute("DROP VIEW IF EXISTS v_exam_stats CASCADE")
 
     op.alter_column(
         "question",
@@ -122,8 +122,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     """Revert Portuguese values back to English and shrink column to 30 chars."""
-    op.execute("DROP VIEW IF EXISTS v_question_detail")
-    op.execute("DROP VIEW IF EXISTS v_exam_stats")
+    op.execute("DROP VIEW IF EXISTS v_question_detail CASCADE")
+    op.execute("DROP VIEW IF EXISTS v_exam_stats CASCADE")
 
     for old_value, new_value in _AREA_EN_TO_PT.items():
         op.execute(
