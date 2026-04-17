@@ -20,7 +20,7 @@ class QuestionDetailView:
 
     question_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
     statement: Mapped[str] = mapped_column(String(1500))
-    area: Mapped[str] = mapped_column(String(30))
+    area: Mapped[str] = mapped_column(String(40))
     correct: Mapped[str] = mapped_column(String(1))
     tags: Mapped[list[str]] = mapped_column(
         JSONB().with_variant(JSON(), "sqlite")

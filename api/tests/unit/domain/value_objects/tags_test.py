@@ -32,12 +32,12 @@ class TestTagsNormalization:
 
 class TestTagsLengthValidation:
     def test_tag_at_max_length_is_valid(self):
-        tag = "a" * 30
+        tag = "a" * 50
         assert _validate([tag]) == [tag]
 
     def test_tag_above_max_length_raises(self):
-        with pytest.raises(ValidationError, match="Tag excede 30 caracteres"):
-            _validate(["a" * 31])
+        with pytest.raises(ValidationError, match="Tag excede 50 caracteres"):
+            _validate(["a" * 51])
 
     def test_up_to_twenty_tags_is_valid(self):
         tags = [f"tag{i}" for i in range(20)]

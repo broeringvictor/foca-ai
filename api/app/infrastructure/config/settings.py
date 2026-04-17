@@ -1,11 +1,27 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
+from pathlib import Path
+
 from argon2 import PasswordHasher
+from pydantic import BaseModel, Field, NonNegativeFloat, PositiveInt
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import URL
+
+ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
+
+
+class LLMSettings(BaseModel):
+    temperature: NonNegativeFloat = 0.7
+    timeout: PositiveInt = 30
+    max_tokens: PositiveInt = 1000
+    max_retries: PositiveInt = 6
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=ENV_FILE,
+        env_file_encoding="utf-8",
+        env_nested_delimiter="__",
+    )
 
     # CONFIG MAP
     ## 1. db
@@ -30,9 +46,13 @@ class Settings(BaseSettings):
     MAX_MARKDOWN_CONTENT_LEN: int = 20_000
     MAX_MARKDOWN_BYTES: int = 120_000
 
+    ## 4. LLM
+    llm: LLMSettings = Field(default_factory=LLMSettings)
+
     # SECRETS MAP
     POSTGRES_PASSWORD: str
     JWT_KEY: str
+    ANTHROPIC_API_KEY: str
 
     @property
     def password_hasher(self) -> PasswordHasher:

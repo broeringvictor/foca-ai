@@ -1,17 +1,29 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Form, status
 
 from app.api.dependecies.auth import get_current_user_id
 from app.api.dependecies.question import (
+    get_add_answer_key_to_exam_dependency,
+    get_categorize_questions_dependency,
     get_check_answer_dependency,
     get_create_question_dependency,
     get_delete_question_dependency,
+    get_pdf_bytes_for_review,
     get_question_dependency,
+    get_review_questions_from_pdf_dependency,
     get_update_question_dependency,
     list_questions_by_exam_dependency,
 )
 from app.api.errors.schemas import ErrorResponse
+from app.application.dto.question.add_answer_key_dto import (
+    AddAnswerKeyToExamDTO,
+    AddAnswerKeyToExamResponse,
+)
+from app.application.dto.question.categorize_dto import (
+    CategorizeQuestionsDTO,
+    CategorizeQuestionsResponse,
+)
 from app.application.dto.question.check_answer_dto import (
     CheckAnswerDTO,
     CheckAnswerResponse,
@@ -25,15 +37,19 @@ from app.application.dto.question.get_dto import (
     GetQuestionResponse,
     ListQuestionsResponse,
 )
+from app.application.dto.question.review_from_pdf_dto import ReviewQuestionsFromPDFResponse
 from app.application.dto.question.update_dto import (
     UpdateQuestionDTO,
     UpdateQuestionResponse,
 )
+from app.application.use_cases.question.categorize import CategorizeQuestions
 from app.application.use_cases.question.check_answer import CheckAnswer
 from app.application.use_cases.question.create import CreateQuestion
 from app.application.use_cases.question.delete import DeleteQuestion
 from app.application.use_cases.question.get import GetQuestion, ListQuestionsByExam
+from app.application.use_cases.question.review_from_pdf import ReviewQuestionsFromPDF
 from app.application.use_cases.question.update import UpdateQuestion
+from app.domain.value_objects.raw_exam import ExtractionOptions
 
 router = APIRouter(
     prefix="/questions",
@@ -144,3 +160,67 @@ async def delete_question(
     use_case: DeleteQuestion = Depends(get_delete_question_dependency),
 ) -> DeleteQuestionResponse:
     return await use_case.execute(question_id)
+
+
+@router.post(
+    "/categorize",
+    summary="categorize",
+    description="Classifica automaticamente as questões de uma prova OAB usando o serviço de categorização.",
+    response_model=CategorizeQuestionsResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        400: {"model": ErrorResponse, "description": "Entrada inválida"},
+        422: {"model": ErrorResponse, "description": "Erro de validação"},
+    },
+)
+async def categorize_questions(
+    body: CategorizeQuestionsDTO,
+    use_case: CategorizeQuestions = Depends(get_categorize_questions_dependency),
+) -> CategorizeQuestionsResponse:
+    return await use_case.execute(body)
+
+
+@router.post(
+    "/exam/{exam_id}/add-answer-key",
+    summary="add answer key",
+    description="Importa o gabarito oficial de um PDF e atualiza as questões de um exame.",
+    response_model=AddAnswerKeyToExamResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        404: {"model": ErrorResponse, "description": "Exame não encontrado"},
+        400: {"model": ErrorResponse, "description": "Erro no processamento do PDF"},
+    },
+)
+async def add_answer_key(
+    exam_id: UUID,
+    pdf_bytes: bytes = Depends(get_pdf_bytes_for_review),
+    use_case: AddAnswerKeyToExam = Depends(get_add_answer_key_to_exam_dependency),
+) -> AddAnswerKeyToExamResponse:
+    input_data = AddAnswerKeyToExamDTO(exam_id=exam_id, pdf_bytes=pdf_bytes)
+    return await use_case.execute(input_data)
+
+
+@router.post(
+    "/review-from-pdf",
+    summary="extract + categorize",
+    description="Extrai questões de um PDF, categoriza e retorna uma lista para revisão humana em uma única chamada.",
+    response_model=ReviewQuestionsFromPDFResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        400: {"model": ErrorResponse, "description": "Entrada inválida"},
+        422: {"model": ErrorResponse, "description": "Erro de validação"},
+    },
+)
+async def review_questions_from_pdf(
+    pdf_bytes: bytes = Depends(get_pdf_bytes_for_review),
+    header_height: int = Form(65),
+    footer_height: int = Form(60),
+    column_split: int = Form(298),
+    use_case: ReviewQuestionsFromPDF = Depends(get_review_questions_from_pdf_dependency),
+) -> ReviewQuestionsFromPDFResponse:
+    options = ExtractionOptions(
+        header_height=header_height,
+        footer_height=footer_height,
+        column_split=column_split,
+    )
+    return await use_case.execute(pdf_bytes=pdf_bytes, options=options)
