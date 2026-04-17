@@ -2,6 +2,7 @@ import io
 import re
 
 import pdfplumber
+from loguru import logger
 
 from app.domain.value_objects.raw_exam import (
     ExtractionOptions,
@@ -20,11 +21,26 @@ class ExtractOABQuestionService:
     """Implementação de ``IOABExtractorService`` usando pdfplumber."""
 
     def extract(self, pdf_bytes: bytes, options: ExtractionOptions) -> RawExam:
+        logger.info(
+            "extract.oab: start pdf_bytes={} header={} footer={} split={}",
+            len(pdf_bytes),
+            options.header_height,
+            options.footer_height,
+            options.column_split,
+        )
         with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+            logger.info("extract.oab: pdf_opened pages={}", len(pdf.pages))
             header = self._extract_header(pdf)
             text = self._extract_questions_text(pdf, options)
 
         questions = self._parse_questions(text)
+        logger.info(
+            "extract.oab: done edition={} type={} color={} questions={}",
+            header["edition"],
+            header["exam_type"],
+            header["color"],
+            len(questions),
+        )
         return RawExam(**header, questions=questions)
 
     # ── header (capa) ─────────────────────────────────────────────────────────
@@ -36,6 +52,7 @@ class ExtractOABQuestionService:
         type_match = TYPE_RE.search(text)
 
         if not title_match or not type_match:
+            logger.warning("extract.oab: header_not_recognized")
             raise ValueError("Cabeçalho do exame não reconhecido na 1ª página")
 
         return {
@@ -66,6 +83,10 @@ class ExtractOABQuestionService:
         )
         match = QUESTIONNAIRE_RE.search(full_text)
         if match:
+            logger.info(
+                "extract.oab: questionnaire_tail_trimmed chars_before_trim={}",
+                len(full_text) - match.start(),
+            )
             full_text = full_text[: match.start()]
         return full_text.rstrip()
 
@@ -109,4 +130,9 @@ class ExtractOABQuestionService:
                 continue
 
         questions.sort(key=lambda q: q.number)
+        logger.info(
+            "extract.oab: parsed_questions total={} candidate_blocks={}",
+            len(questions),
+            len(starts),
+        )
         return questions

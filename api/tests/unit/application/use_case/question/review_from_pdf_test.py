@@ -56,6 +56,8 @@ class TestReviewQuestionsFromPDF:
         categorizer.classify.assert_called_once()
         assert result.extracted_questions_count == 0
         assert result.categorized_questions_count == 0
+        assert result.area_validation.total_questions == 0
+        assert result.area_validation.counts_by_area
 
     @pytest.mark.asyncio
     async def test_execute_raises_bad_request_when_extractor_fails(
@@ -68,4 +70,3 @@ class TestReviewQuestionsFromPDF:
 
         with pytest.raises(BadRequestError, match="PDF invalido"):
             await use_case.execute(pdf_bytes=b"broken", options=options)
-
