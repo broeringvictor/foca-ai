@@ -1,4 +1,5 @@
 from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.errors.exceptions import BadRequestError
 from app.application.dto.question.review_from_pdf_dto import (
@@ -22,11 +23,13 @@ class ReviewQuestionsFromPDF:
         categorizer: IQuestionCategorizationService,
         exam_repository: IExamRepository,
         question_repository: IQuestionRepository,
+        session: AsyncSession,
     ) -> None:
         self._extractor = extractor
         self._categorizer = categorizer
         self._exam_repository = exam_repository
         self._question_repository = question_repository
+        self._session = session
 
     async def execute(
         self, pdf_bytes: bytes, options: ExtractionOptions
@@ -69,6 +72,8 @@ class ReviewQuestionsFromPDF:
 
         for question in questions:
             await self._question_repository.save(question)
+
+        await self._session.commit()
 
         area_validation = build_area_validation(questions)
 

@@ -131,6 +131,7 @@ def get_review_questions_from_pdf_dependency(
         categorizer=get_question_categorization_service_dependency(),
         exam_repository=ExamRepository(session),
         question_repository=QuestionRepository(session),
+        session=session,
     )
 
 
