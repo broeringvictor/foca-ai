@@ -2,7 +2,7 @@ import json
 
 from app.domain.enums.law_area import LawArea
 from app.domain.value_objects.raw_exam import RawExam, RawQuestion
-from app.infrastructure.services.question_categorization_service import (
+from app.infrastructure.services.categorization.service import (
     QuestionCategorizationService,
 )
 
