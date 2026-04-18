@@ -64,6 +64,32 @@ class QuestionRepository:
         models = result.scalars().all()
         return [self._to_entity(m) for m in models]
 
+    async def find_one_by_exam_id_at_index(
+        self, exam_id: UUID, index: int
+    ) -> Question | None:
+        """Busca uma questão de um exame por índice (offset), ordenada pelo número."""
+        stmt = (
+            select(QuestionModel)
+            .where(QuestionModel.exam_id == exam_id)
+            .order_by(QuestionModel.number)
+            .offset(index)
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        model = result.scalar_one_or_none()
+        if model is None:
+            return None
+        return self._to_entity(model)
+
+    async def count_by_exam_id(self, exam_id: UUID) -> int:
+        from sqlalchemy import func
+
+        stmt = select(func.count(QuestionModel.id)).where(
+            QuestionModel.exam_id == exam_id
+        )
+        result = await self._session.execute(stmt)
+        return int(result.scalar_one() or 0)
+
     # ── mapeamento ────────────────────────────────────────────────────────────
 
     @staticmethod
