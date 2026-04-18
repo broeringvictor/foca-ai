@@ -8,6 +8,17 @@ from app.domain.entities.study_note import StudyNote
 from app.infrastructure.model.study_note_model import StudyNoteModel
 
 
+def _coerce_embedding(value: object) -> list[float] | None:
+    if value is None:
+        return None
+    if isinstance(value, list):
+        return [float(v) for v in value]
+    try:
+        return [float(v) for v in value.tolist()]
+    except AttributeError:
+        return list(value)
+
+
 class StudyNoteRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
@@ -48,6 +59,37 @@ class StudyNoteRepository:
         models = result.scalars().all()
         return [self._to_entity(m) for m in models]
 
+    async def find_by_embedding_similarity(
+        self,
+        user_id: UUID,
+        query_vector: list[float],
+        limit: int,
+    ) -> list[tuple[StudyNote, float]]:
+        distance_expr = StudyNoteModel.embedding.cosine_distance(query_vector)
+        stmt = (
+            select(StudyNoteModel, distance_expr.label("distance"))
+            .options(
+                load_only(
+                    StudyNoteModel.id,
+                    StudyNoteModel.user_id,
+                    StudyNoteModel.title,
+                    StudyNoteModel.description,
+                    StudyNoteModel.created_at,
+                    StudyNoteModel.updated_at,
+                )
+            )
+            .where(
+                StudyNoteModel.user_id == user_id,
+                StudyNoteModel.embedding.is_not(None),
+            )
+            .order_by(distance_expr)
+            .limit(limit)
+        )
+
+        result = await self._session.execute(stmt)
+        rows = result.all()
+        return [(self._to_entity(model), 1.0 - float(distance)) for model, distance in rows]
+
     # ── mapeamento ────────────────────────────────────────────────────────────
 
     @staticmethod
@@ -59,6 +101,7 @@ class StudyNoteRepository:
             description=model.description,
             content=model.content,
             tags=model.tags,
+            embedding=_coerce_embedding(model.embedding),
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -72,6 +115,7 @@ class StudyNoteRepository:
             description=study_note.description,
             content=study_note.content,
             tags=study_note.tags,
+            embedding=study_note.embedding,
             created_at=study_note.created_at,
             updated_at=study_note.updated_at,
         )

@@ -19,6 +19,7 @@ class StudyNote(Entity):
     description: str | None = Field(None, min_length=4, max_length=500)
     content: str | None = Field(None, max_length=20000)
     tags: Tags = Field(default_factory=list)
+    embedding: list[float] | None = None
 
     @classmethod
     def create(
@@ -28,6 +29,7 @@ class StudyNote(Entity):
         description: str | None = None,
         content: str | None = None,
         tags: list[str] | None = None,
+        embedding: list[float] | None = None,
     ) -> "StudyNote":
         return cls(
             user_id=user_id,
@@ -35,4 +37,5 @@ class StudyNote(Entity):
             description=description,
             content=content,
             tags=tags or [],
+            embedding=embedding,
         )

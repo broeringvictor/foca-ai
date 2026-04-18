@@ -2,6 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
+from pgvector.sqlalchemy import HALFVEC
 from sqlalchemy import String, DateTime, ForeignKey, JSON
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -32,6 +33,12 @@ class StudyNoteModel:
     tags: Mapped[list[str]] = mapped_column(
         JSONB().with_variant(JSON(), "sqlite"),
         default_factory=list,
+    )
+
+    embedding: Mapped[list[float] | None] = mapped_column(
+        HALFVEC(3072).with_variant(JSON(), "sqlite"),
+        nullable=True,
+        default=None,
     )
 
     user: Mapped["UserModel"] = relationship(back_populates="study_notes", init=False)
