@@ -8,6 +8,7 @@ from app.application.dto.question.add_answer_key_dto import (
 )
 from app.domain.repositories.exam_repository import IExamRepository
 from app.domain.repositories.question_repository import IQuestionRepository
+from app.domain.services.embedding_service import IEmbeddingService
 from app.infrastructure.services.extract_oab_answer_key import ExtractOABAnswerKeyService
 
 
@@ -17,11 +18,13 @@ class AddAnswerKeyToExam:
         exam_repository: IExamRepository,
         question_repository: IQuestionRepository,
         answer_key_service: ExtractOABAnswerKeyService,
+        embedding_service: IEmbeddingService,
         session: AsyncSession,
     ) -> None:
         self._exam_repository = exam_repository
         self._question_repository = question_repository
         self._answer_key_service = answer_key_service
+        self._embedding_service = embedding_service
         self._session = session
 
     async def execute(self, input_data: AddAnswerKeyToExamDTO) -> AddAnswerKeyToExamResponse:
@@ -45,16 +48,25 @@ class AddAnswerKeyToExam:
 
         # 3. Buscar todas as questões do exame
         questions = await self._question_repository.find_all_by_exam_id(exam.id)
-        
-        updated_count = 0
-        for question in questions:
-            if question.number in answer_map:
-                # Atualiza a alternativa correta
-                question.correct = answer_map[question.number]
-                await self._question_repository.update(question)
-                updated_count += 1
 
-        # 4. Commit explícito
+        updated_questions = [q for q in questions if q.number in answer_map]
+        for question in updated_questions:
+            question.correct = answer_map[question.number]
+
+        # 4. Embedar (statement + alternativa correta) numa única chamada em batch
+        if updated_questions:
+            embeddings = await self._embedding_service.embed_documents(
+                [q.embedding_text for q in updated_questions]
+            )
+            for question, vector in zip(updated_questions, embeddings, strict=True):
+                question.embedding = vector
+
+        for question in updated_questions:
+            await self._question_repository.update(question)
+
+        updated_count = len(updated_questions)
+
+        # 5. Commit explícito
         await self._session.commit()
 
         logger.info(

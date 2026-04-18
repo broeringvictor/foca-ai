@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, status
+from fastapi import APIRouter, Depends, Form, Query, status
 
 from app.api.dependecies.auth import get_current_user_id
 from app.api.dependecies.question import (
@@ -14,6 +14,11 @@ from app.api.dependecies.question import (
     get_review_questions_from_pdf_dependency,
     get_update_question_dependency,
     list_questions_by_exam_dependency,
+)
+from app.api.dependecies.study_note import get_find_related_study_notes_dependency
+from app.application.dto.study_note.related_dto import FindRelatedStudyNotesResponse
+from app.application.use_cases.study_note.find_related_to_question import (
+    FindRelatedStudyNotes,
 )
 from app.api.errors.schemas import ErrorResponse
 from app.application.dto.question.add_answer_key_dto import (
@@ -198,6 +203,31 @@ async def add_answer_key(
 ) -> AddAnswerKeyToExamResponse:
     input_data = AddAnswerKeyToExamDTO(exam_id=exam_id, pdf_bytes=pdf_bytes)
     return await use_case.execute(input_data)
+
+
+@router.get(
+    "/{question_id}/related-study-notes",
+    summary="related study notes",
+    description=(
+        "Retorna as notas de estudo do usuário autenticado mais próximas "
+        "semanticamente do enunciado da questão (kNN via embeddings)."
+    ),
+    response_model=FindRelatedStudyNotesResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        400: {"model": ErrorResponse, "description": "Questão sem embedding"},
+        404: {"model": ErrorResponse, "description": "Questão não encontrada"},
+    },
+)
+async def related_study_notes(
+    question_id: UUID,
+    limit: int = Query(5, ge=1, le=20),
+    user_id: UUID = Depends(get_current_user_id),
+    use_case: FindRelatedStudyNotes = Depends(get_find_related_study_notes_dependency),
+) -> FindRelatedStudyNotesResponse:
+    return await use_case.execute(
+        user_id=user_id, question_id=question_id, limit=limit
+    )
 
 
 @router.post(
