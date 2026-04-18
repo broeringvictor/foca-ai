@@ -6,17 +6,11 @@ from app.application.dto.question.create_dto import (
 )
 from app.domain.entities.question import Question
 from app.domain.repositories.question_repository import IQuestionRepository
-from app.domain.services.embedding_service import IEmbeddingService
 
 
 class CreateQuestion:
-    def __init__(
-        self,
-        repository: IQuestionRepository,
-        embedding_service: IEmbeddingService,
-    ) -> None:
+    def __init__(self, repository: IQuestionRepository) -> None:
         self._repo = repository
-        self._embedding_service = embedding_service
 
     async def execute(self, input_data: CreateQuestionDTO) -> CreateQuestionResponse:
         question = Question.create(
@@ -29,10 +23,6 @@ class CreateQuestion:
             alternative_c=input_data.alternative_c,
             alternative_d=input_data.alternative_d,
             tags=input_data.tags,
-        )
-
-        question.embedding = await self._embedding_service.embed_query(
-            question.embedding_text
         )
 
         try:
