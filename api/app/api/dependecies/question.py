@@ -10,7 +10,12 @@ from app.application.use_cases.question.categorize import CategorizeQuestions
 from app.application.use_cases.question.check_answer import CheckAnswer
 from app.application.use_cases.question.create import CreateQuestion
 from app.application.use_cases.question.delete import DeleteQuestion
-from app.application.use_cases.question.get import GetQuestion, ListQuestionsByExam
+from app.application.use_cases.question.generate_embeddings import GenerateEmbeddingsForExam
+from app.application.use_cases.question.get import (
+    GetNextQuestionByExam,
+    GetQuestion,
+    ListQuestionsByExam,
+)
 from app.application.use_cases.question.review_from_pdf import ReviewQuestionsFromPDF
 from app.application.use_cases.question.update import UpdateQuestion
 from app.domain.services.embedding_service import IEmbeddingService
@@ -83,12 +88,8 @@ async def get_pdf_bytes_for_review(
 
 def get_create_question_dependency(
     session: AsyncSession = Depends(get_session),
-    embedding_service: IEmbeddingService = Depends(get_embedding_service_dependency),
 ) -> CreateQuestion:
-    return CreateQuestion(
-        repository=QuestionRepository(session),
-        embedding_service=embedding_service,
-    )
+    return CreateQuestion(repository=QuestionRepository(session))
 
 
 def get_update_question_dependency(
@@ -113,6 +114,23 @@ def list_questions_by_exam_dependency(
     session: AsyncSession = Depends(get_session),
 ) -> ListQuestionsByExam:
     return ListQuestionsByExam(repository=QuestionRepository(session))
+
+
+def get_next_question_by_exam_dependency(
+    session: AsyncSession = Depends(get_session),
+) -> GetNextQuestionByExam:
+    return GetNextQuestionByExam(repository=QuestionRepository(session))
+
+
+def get_generate_embeddings_for_exam_dependency(
+    session: AsyncSession = Depends(get_session),
+    embedding_service: IEmbeddingService = Depends(get_embedding_service_dependency),
+) -> GenerateEmbeddingsForExam:
+    return GenerateEmbeddingsForExam(
+        repository=QuestionRepository(session),
+        embedding_service=embedding_service,
+        session=session,
+    )
 
 
 def get_check_answer_dependency(
@@ -145,13 +163,11 @@ def get_review_questions_from_pdf_dependency(
 
 def get_add_answer_key_to_exam_dependency(
     session: AsyncSession = Depends(get_session),
-    embedding_service: IEmbeddingService = Depends(get_embedding_service_dependency),
 ) -> AddAnswerKeyToExam:
     return AddAnswerKeyToExam(
         exam_repository=ExamRepository(session),
         question_repository=QuestionRepository(session),
         answer_key_service=ExtractOABAnswerKeyService(),
-        embedding_service=embedding_service,
         session=session,
     )
 

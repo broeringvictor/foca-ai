@@ -9,6 +9,8 @@ from app.api.dependecies.question import (
     get_check_answer_dependency,
     get_create_question_dependency,
     get_delete_question_dependency,
+    get_generate_embeddings_for_exam_dependency,
+    get_next_question_by_exam_dependency,
     get_pdf_bytes_for_review,
     get_question_dependency,
     get_review_questions_from_pdf_dependency,
@@ -41,6 +43,7 @@ from app.application.dto.question.delete_dto import DeleteQuestionResponse
 from app.application.dto.question.get_dto import (
     GetQuestionResponse,
     ListQuestionsResponse,
+    PaginatedQuestionResponse,
 )
 from app.application.dto.question.review_from_pdf_dto import ReviewQuestionsFromPDFResponse
 from app.application.dto.question.update_dto import (
@@ -51,7 +54,12 @@ from app.application.use_cases.question.categorize import CategorizeQuestions
 from app.application.use_cases.question.check_answer import CheckAnswer
 from app.application.use_cases.question.create import CreateQuestion
 from app.application.use_cases.question.delete import DeleteQuestion
-from app.application.use_cases.question.get import GetQuestion, ListQuestionsByExam
+from app.application.use_cases.question.generate_embeddings import GenerateEmbeddingsForExam
+from app.application.use_cases.question.get import (
+    GetNextQuestionByExam,
+    GetQuestion,
+    ListQuestionsByExam,
+)
 from app.application.use_cases.question.review_from_pdf import ReviewQuestionsFromPDF
 from app.application.use_cases.question.update import UpdateQuestion
 from app.domain.value_objects.raw_exam import ExtractionOptions
@@ -109,6 +117,34 @@ async def list_questions_by_exam(
     exam_id: UUID,
     use_case: ListQuestionsByExam = Depends(list_questions_by_exam_dependency),
 ) -> ListQuestionsResponse:
+    return await use_case.execute(exam_id)
+
+
+@router.get(
+    "/exam/{exam_id}/next",
+    summary="get next question",
+    description="Retorna uma questão específica de um exame baseada no índice (0 a N-1).",
+    response_model=PaginatedQuestionResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def get_next_question_by_exam(
+    exam_id: UUID,
+    index: int = Query(0, ge=0),
+    use_case: GetNextQuestionByExam = Depends(get_next_question_by_exam_dependency),
+) -> PaginatedQuestionResponse:
+    return await use_case.execute(exam_id, index)
+
+
+@router.post(
+    "/exam/{exam_id}/generate-embeddings",
+    summary="generate exam embeddings",
+    description="Gera embeddings para todas as questões de um exame que ainda não possuem.",
+    status_code=status.HTTP_200_OK,
+)
+async def generate_exam_embeddings(
+    exam_id: UUID,
+    use_case: GenerateEmbeddingsForExam = Depends(get_generate_embeddings_for_exam_dependency),
+) -> dict:
     return await use_case.execute(exam_id)
 
 

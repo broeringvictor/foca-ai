@@ -24,3 +24,12 @@ class ListQuestionsResponse(BaseModel):
 
     questions: list[GetQuestionResponse]
 
+
+class PaginatedQuestionResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    question: GetQuestionResponse | None
+    current_index: int
+    total_questions: int
+    has_next: bool
+
