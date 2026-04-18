@@ -36,6 +36,7 @@ class QuestionRepository:
         model.tags = list(question.tags)
         model.confidence = question.confidence
         model.source = question.source
+        model.embedding = question.embedding
         model.updated_at = question.updated_at
 
     async def delete(self, question_id: UUID) -> None:
@@ -81,6 +82,7 @@ class QuestionRepository:
             tags=list(model.tags or []),
             confidence=model.confidence,
             source=model.source,
+            embedding=_coerce_embedding(model.embedding),
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -101,6 +103,19 @@ class QuestionRepository:
             tags=list(question.tags),
             confidence=question.confidence,
             source=question.source,
+            embedding=question.embedding,
             created_at=question.created_at,
             updated_at=question.updated_at,
         )
+
+
+def _coerce_embedding(value: object) -> list[float] | None:
+    """Normalize halfvec / JSON / numpy array results into list[float] | None."""
+    if value is None:
+        return None
+    if isinstance(value, list):
+        return [float(v) for v in value]
+    try:
+        return [float(v) for v in value.tolist()]  # numpy / pgvector array
+    except AttributeError:
+        return list(value)
