@@ -90,6 +90,30 @@ class QuestionRepository:
         result = await self._session.execute(stmt)
         return int(result.scalar_one() or 0)
 
+    async def find_by_embedding_similarity(
+        self,
+        query_vector: list[float],
+        limit: int,
+        exam_id: UUID | None = None,
+    ) -> list[tuple[Question, float]]:
+        distance_expr = QuestionModel.embedding.cosine_distance(query_vector)
+        stmt = (
+            select(QuestionModel, distance_expr.label("distance"))
+            .where(QuestionModel.embedding.is_not(None))
+        )
+
+        if exam_id:
+            stmt = stmt.where(QuestionModel.exam_id == exam_id)
+
+        stmt = stmt.order_by(distance_expr).limit(limit)
+
+        result = await self._session.execute(stmt)
+        rows = result.all()
+        return [
+            (self._to_entity(model), 1.0 - float(distance))
+            for model, distance in rows
+        ]
+
     # ── mapeamento ────────────────────────────────────────────────────────────
 
     @staticmethod
@@ -136,12 +160,18 @@ class QuestionRepository:
 
 
 def _coerce_embedding(value: object) -> list[float] | None:
-    """Normalize halfvec / JSON / numpy array results into list[float] | None."""
+    """Normalize HalfVector / Vector / JSON / numpy results into list[float] | None."""
     if value is None:
         return None
     if isinstance(value, list):
         return [float(v) for v in value]
+
+    # Handle pgvector/numpy objects that might have to_list, tolist, or are iterable
+    for method in ("to_list", "tolist"):
+        if hasattr(value, method):
+            return [float(v) for v in getattr(value, method)()]
+
     try:
-        return [float(v) for v in value.tolist()]  # numpy / pgvector array
-    except AttributeError:
-        return list(value)
+        return [float(v) for v in value]  # type: ignore
+    except (TypeError, ValueError):
+        return None

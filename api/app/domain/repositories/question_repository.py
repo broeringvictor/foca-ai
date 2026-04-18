@@ -15,3 +15,9 @@ class IQuestionRepository(Protocol):
         self, exam_id: UUID, index: int
     ) -> Question | None: ...
     async def count_by_exam_id(self, exam_id: UUID) -> int: ...
+    async def find_by_embedding_similarity(
+        self,
+        query_vector: list[float],
+        limit: int,
+        exam_id: UUID | None = None,
+    ) -> list[tuple[Question, float]]: ...

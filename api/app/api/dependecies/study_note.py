@@ -3,6 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependecies.embeddings import get_embedding_service_dependency
 from app.application.use_cases.study_note.create import CreateStudyNote
+from app.application.use_cases.study_note.find_related_questions import (
+    FindRelatedQuestionsToNote,
+)
+from app.application.use_cases.study_note.find_related_to_note import (
+    FindRelatedStudyNotesToNote,
+)
 from app.application.use_cases.study_note.find_related_to_question import (
     FindRelatedStudyNotes,
 )
@@ -26,6 +32,23 @@ def get_find_related_study_notes_dependency(
     session: AsyncSession = Depends(get_session),
 ) -> FindRelatedStudyNotes:
     return FindRelatedStudyNotes(
+        study_note_repository=StudyNoteRepository(session),
+        question_repository=QuestionRepository(session),
+    )
+
+
+def get_find_related_study_notes_to_note_dependency(
+    session: AsyncSession = Depends(get_session),
+) -> FindRelatedStudyNotesToNote:
+    return FindRelatedStudyNotesToNote(
+        study_note_repository=StudyNoteRepository(session),
+    )
+
+
+def get_find_related_questions_to_note_dependency(
+    session: AsyncSession = Depends(get_session),
+) -> FindRelatedQuestionsToNote:
+    return FindRelatedQuestionsToNote(
         study_note_repository=StudyNoteRepository(session),
         question_repository=QuestionRepository(session),
     )

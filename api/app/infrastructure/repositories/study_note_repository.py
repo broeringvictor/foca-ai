@@ -9,14 +9,21 @@ from app.infrastructure.model.study_note_model import StudyNoteModel
 
 
 def _coerce_embedding(value: object) -> list[float] | None:
+    """Normalize HalfVector / Vector / JSON / numpy results into list[float] | None."""
     if value is None:
         return None
     if isinstance(value, list):
         return [float(v) for v in value]
+
+    # Handle pgvector/numpy objects that might have to_list, tolist, or are iterable
+    for method in ("to_list", "tolist"):
+        if hasattr(value, method):
+            return [float(v) for v in getattr(value, method)()]
+
     try:
-        return [float(v) for v in value.tolist()]
-    except AttributeError:
-        return list(value)
+        return [float(v) for v in value]  # type: ignore
+    except (TypeError, ValueError):
+        return None
 
 
 class StudyNoteRepository:
@@ -40,18 +47,9 @@ class StudyNoteRepository:
         return self._to_entity(model)
 
     async def find_all_by_user_id(self, user_id: UUID) -> list[StudyNote]:
+        # Carregamos todos os campos necessários para a entidade StudyNote
         stmt = (
             select(StudyNoteModel)
-            .options(
-                load_only(
-                    StudyNoteModel.id,
-                    StudyNoteModel.user_id,
-                    StudyNoteModel.title,
-                    StudyNoteModel.description,
-                    StudyNoteModel.created_at,
-                    StudyNoteModel.updated_at,
-                )
-            )
             .where(StudyNoteModel.user_id == user_id)
         )
 
@@ -66,18 +64,9 @@ class StudyNoteRepository:
         limit: int,
     ) -> list[tuple[StudyNote, float]]:
         distance_expr = StudyNoteModel.embedding.cosine_distance(query_vector)
+        # Removido load_only para evitar erro de lazy loading em sessão assíncrona
         stmt = (
             select(StudyNoteModel, distance_expr.label("distance"))
-            .options(
-                load_only(
-                    StudyNoteModel.id,
-                    StudyNoteModel.user_id,
-                    StudyNoteModel.title,
-                    StudyNoteModel.description,
-                    StudyNoteModel.created_at,
-                    StudyNoteModel.updated_at,
-                )
-            )
             .where(
                 StudyNoteModel.user_id == user_id,
                 StudyNoteModel.embedding.is_not(None),

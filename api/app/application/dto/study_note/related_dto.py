@@ -16,3 +16,10 @@ class FindRelatedStudyNotesResponse(BaseModel):
 
     question_id: UUID8
     items: list[RelatedStudyNoteItem] = Field(default_factory=list)
+
+
+class FindRelatedStudyNotesToNoteResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    study_note_id: UUID8
+    items: list[RelatedStudyNoteItem] = Field(default_factory=list)
