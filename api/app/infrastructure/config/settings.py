@@ -16,6 +16,13 @@ class LLMSettings(BaseModel):
     max_retries: PositiveInt = 6
 
 
+class EmbeddingSettings(BaseModel):
+    model: str = "text-embedding-3-large"
+    dimensions: PositiveInt = 3072
+    timeout: PositiveInt = 30
+    max_retries: PositiveInt = 6
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
@@ -49,10 +56,14 @@ class Settings(BaseSettings):
     ## 4. LLM
     llm: LLMSettings = Field(default_factory=LLMSettings)
 
+    ## 5. EMBEDDING
+    embedding: EmbeddingSettings = Field(default_factory=EmbeddingSettings)
+
     # SECRETS MAP
     POSTGRES_PASSWORD: str
     JWT_KEY: str
     ANTHROPIC_API_KEY: str
+    OPENAI_API_KEY: str
 
     @property
     def password_hasher(self) -> PasswordHasher:

@@ -19,8 +19,14 @@ services:
       LLM__TIMEOUT: 30
       LLM__MAX_TOKENS: 1000
       LLM__MAX_RETRIES: 6
+
+      OPENAI_API_KEY: "replace-me"
+      EMBEDDING__MODEL: "text-embedding-3-large"
+      EMBEDDING__DIMENSIONS: 3072
+      EMBEDDING__TIMEOUT: 30
+      EMBEDDING__MAX_RETRIES: 6
   db:
-    image: postgres:18
+    image: pgvector/pgvector:pg18
     restart: unless-stopped
     environment:
       POSTGRES_DB: foca-ai
