@@ -8,8 +8,10 @@ from app.api.dependecies.study_note import (
     get_create_study_note_dependency,
     get_find_related_questions_to_note_dependency,
     get_find_related_study_notes_to_note_dependency,
+    get_study_note_question_list_dependency,
 )
 from app.api.errors.schemas import ErrorResponse
+from app.application.dto.question.get_dto import GetQuestionsListResponse
 from app.application.dto.question.related_dto import FindRelatedQuestionsToNoteResponse
 from app.application.dto.study_note.create_dto import (
     CreateStudyNoteDTO,
@@ -20,6 +22,7 @@ from app.application.use_cases.study_note.create import CreateStudyNote
 from app.application.use_cases.study_note.find_related_questions import (
     FindRelatedQuestionsToNote,
 )
+from app.application.use_cases.study_note.get_question_list import GetStudyNoteQuestionList
 from app.application.use_cases.study_note.find_related_to_note import (
     FindRelatedStudyNotesToNote,
 )
@@ -93,7 +96,7 @@ async def get_related_study_notes(
     )
 
 
-@router.get(
+@router.post(
     "/{study_note_id}/questions",
     summary="related questions",
     description=(
@@ -119,3 +122,24 @@ async def get_related_questions(
     return await use_case.execute(
         study_note_id=study_note_id, limit=limit, exam_id=exam_id
     )
+
+
+@router.get(
+    "/{study_note_id}/question-list",
+    summary="question list",
+    description=(
+        "Retorna a lista de questões salvas na nota de estudo "
+        "(questões com similaridade ≥ 0.65). "
+        "Cada item contém apenas id, enunciado e alternativas (sem gabarito)."
+    ),
+    response_model=GetQuestionsListResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        404: {"model": ErrorResponse, "description": "Nota não encontrada"},
+    },
+)
+async def get_question_list(
+    study_note_id: UUID,
+    use_case: GetStudyNoteQuestionList = Depends(get_study_note_question_list_dependency),
+) -> GetQuestionsListResponse:
+    return await use_case.execute(study_note_id)

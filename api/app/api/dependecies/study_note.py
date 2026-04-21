@@ -12,6 +12,7 @@ from app.application.use_cases.study_note.find_related_to_note import (
 from app.application.use_cases.study_note.find_related_to_question import (
     FindRelatedStudyNotes,
 )
+from app.application.use_cases.study_note.get_question_list import GetStudyNoteQuestionList
 from app.domain.services.embedding_service import IEmbeddingService
 from app.infrastructure.repositories.question_repository import QuestionRepository
 from app.infrastructure.repositories.study_note_repository import StudyNoteRepository
@@ -49,6 +50,15 @@ def get_find_related_questions_to_note_dependency(
     session: AsyncSession = Depends(get_session),
 ) -> FindRelatedQuestionsToNote:
     return FindRelatedQuestionsToNote(
+        study_note_repository=StudyNoteRepository(session),
+        question_repository=QuestionRepository(session),
+    )
+
+
+def get_study_note_question_list_dependency(
+    session: AsyncSession = Depends(get_session),
+) -> GetStudyNoteQuestionList:
+    return GetStudyNoteQuestionList(
         study_note_repository=StudyNoteRepository(session),
         question_repository=QuestionRepository(session),
     )

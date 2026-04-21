@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import UUID
 
 from loguru import logger
@@ -9,6 +10,8 @@ from app.application.dto.study_note.related_dto import (
 )
 from app.domain.repositories.question_repository import IQuestionRepository
 from app.domain.repositories.study_note_repository import IStudyNoteRepository
+
+_RELEVANCE_THRESHOLD = 0.65
 
 
 class FindRelatedStudyNotes:
@@ -46,16 +49,22 @@ class FindRelatedStudyNotes:
             limit=limit,
         )
 
-        items = [
-            RelatedStudyNoteItem(
-                id=note.id,
-                title=note.title,
-                description=note.description,
-                tags=list(note.tags),
-                score=max(0.0, min(1.0, score)),
+        items = []
+        for note, score in matches:
+            clamped = max(0.0, min(1.0, score))
+            items.append(
+                RelatedStudyNoteItem(
+                    id=note.id,
+                    title=note.title,
+                    description=note.description,
+                    tags=list(note.tags),
+                    score=clamped,
+                )
             )
-            for note, score in matches
-        ]
+            if clamped >= _RELEVANCE_THRESHOLD:
+                note.add_question(question_id)
+                note.updated_at = datetime.now(UTC)
+                await self._study_note_repo.update(note)
 
         return FindRelatedStudyNotesResponse(
             question_id=question.id,

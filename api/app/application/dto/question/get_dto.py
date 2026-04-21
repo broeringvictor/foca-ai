@@ -33,3 +33,20 @@ class PaginatedQuestionResponse(BaseModel):
     total_questions: int
     has_next: bool
 
+
+class QuestionListItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True, frozen=True)
+
+    id: UUID8
+    statement: str
+    alternative_a: str
+    alternative_b: str
+    alternative_c: str
+    alternative_d: str
+
+
+class GetQuestionsListResponse(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    questions: list[QuestionListItem]
+

@@ -241,12 +241,12 @@ async def add_answer_key(
     return await use_case.execute(input_data)
 
 
-@router.get(
+@router.post(
     "/{question_id}/related-study-notes",
     summary="related study notes",
     description=(
-        "Retorna as notas de estudo do usuário autenticado mais próximas "
-        "semanticamente do enunciado da questão (kNN via embeddings)."
+        "Busca as notas de estudo do usuário semanticamente próximas da questão "
+        "(kNN via embeddings) e salva automaticamente nas notas com score ≥ 0.65."
     ),
     response_model=FindRelatedStudyNotesResponse,
     status_code=status.HTTP_200_OK,
