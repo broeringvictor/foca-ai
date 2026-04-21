@@ -2,11 +2,30 @@ from uuid import UUID
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import load_only
 
 from app.domain.entities.question import Question
 from app.domain.enums.alternatives import Alternative
 from app.domain.enums.law_area import LawArea
 from app.infrastructure.model.question_model import QuestionModel
+
+_COLS_WITHOUT_EMBEDDING = load_only(
+    QuestionModel.id,
+    QuestionModel.exam_id,
+    QuestionModel.number,
+    QuestionModel.statement,
+    QuestionModel.area,
+    QuestionModel.correct,
+    QuestionModel.alternative_a,
+    QuestionModel.alternative_b,
+    QuestionModel.alternative_c,
+    QuestionModel.alternative_d,
+    QuestionModel.tags,
+    QuestionModel.confidence,
+    QuestionModel.source,
+    QuestionModel.created_at,
+    QuestionModel.updated_at,
+)
 
 
 class QuestionRepository:
@@ -51,25 +70,43 @@ class QuestionRepository:
     # ── busca ─────────────────────────────────────────────────────────────────
 
     async def find_by_id(self, question_id: UUID) -> Question | None:
-        stmt = select(QuestionModel).where(QuestionModel.id == question_id)
+        stmt = (
+            select(QuestionModel)
+            .options(_COLS_WITHOUT_EMBEDDING)
+            .where(QuestionModel.id == question_id)
+        )
         result = await self._session.execute(stmt)
         model: QuestionModel | None = result.scalar_one_or_none()
         if model is None:
             return None
         return self._to_entity(model)
 
-    async def find_all_by_exam_id(self, exam_id: UUID) -> list[Question]:
-        stmt = select(QuestionModel).where(QuestionModel.exam_id == exam_id)
+    async def find_by_ids(self, question_ids: list[UUID]) -> list[Question]:
+        if not question_ids:
+            return []
+        stmt = (
+            select(QuestionModel)
+            .options(_COLS_WITHOUT_EMBEDDING)
+            .where(QuestionModel.id.in_(question_ids))
+        )
         result = await self._session.execute(stmt)
-        models = result.scalars().all()
-        return [self._to_entity(m) for m in models]
+        return [self._to_entity(m) for m in result.scalars().all()]
+
+    async def find_all_by_exam_id(self, exam_id: UUID) -> list[Question]:
+        stmt = (
+            select(QuestionModel)
+            .options(_COLS_WITHOUT_EMBEDDING)
+            .where(QuestionModel.exam_id == exam_id)
+        )
+        result = await self._session.execute(stmt)
+        return [self._to_entity(m) for m in result.scalars().all()]
 
     async def find_one_by_exam_id_at_index(
         self, exam_id: UUID, index: int
     ) -> Question | None:
-        """Busca uma questão de um exame por índice (offset), ordenada pelo número."""
         stmt = (
             select(QuestionModel)
+            .options(_COLS_WITHOUT_EMBEDDING)
             .where(QuestionModel.exam_id == exam_id)
             .order_by(QuestionModel.number)
             .offset(index)

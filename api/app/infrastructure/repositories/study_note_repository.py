@@ -2,7 +2,6 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import load_only
 
 from app.domain.entities.study_note import StudyNote
 from app.infrastructure.model.study_note_model import StudyNoteModel
@@ -35,6 +34,18 @@ class StudyNoteRepository:
     async def save(self, study_note: StudyNote) -> None:
         model = self._to_model(study_note)
         self._session.add(model)
+
+    async def update(self, study_note: StudyNote) -> None:
+        model = await self._session.get(StudyNoteModel, study_note.id)
+        if model is None:
+            return
+        model.title = study_note.title
+        model.description = study_note.description
+        model.content = study_note.content
+        model.tags = list(study_note.tags)
+        model.embedding = study_note.embedding
+        model.questions = [str(qid) for qid in study_note.questions]
+        model.updated_at = study_note.updated_at
 
     # ── busca ──────────────────────────────────────────────────────────────────
 
@@ -91,6 +102,7 @@ class StudyNoteRepository:
             content=model.content,
             tags=model.tags,
             embedding=_coerce_embedding(model.embedding),
+            questions=[UUID(qid) for qid in (model.questions or [])],
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -105,6 +117,7 @@ class StudyNoteRepository:
             content=study_note.content,
             tags=study_note.tags,
             embedding=study_note.embedding,
+            questions=[str(qid) for qid in study_note.questions],
             created_at=study_note.created_at,
             updated_at=study_note.updated_at,
         )
