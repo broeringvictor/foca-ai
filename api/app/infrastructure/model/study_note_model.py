@@ -41,4 +41,10 @@ class StudyNoteModel:
         default=None,
     )
 
+    questions: Mapped[list[str]] = mapped_column(
+        JSONB().with_variant(JSON(), "sqlite"),
+        nullable=False,
+        default_factory=list,
+    )
+
     user: Mapped["UserModel"] = relationship(back_populates="study_notes", init=False)
