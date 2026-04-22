@@ -1,0 +1,63 @@
+<div class="py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-6xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold">Minhas Anotações</h1>
+    </div>
+
+    @if (notes.isLoading()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (s of skeletons; track $index) {
+          <p-card>
+            <p-skeleton height="2rem" styleClass="mb-3" />
+            <p-skeleton height="1rem" width="8rem" />
+          </p-card>
+        }
+      </div>
+    } @else if (notes.status() === 'error') {
+      <div class="flex flex-col items-center justify-center min-h-[400px] gap-4 text-center">
+        <p-message severity="error" text="Erro ao carregar anotações." />
+        <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="notes.reload()" />
+      </div>
+    } @else if (notes.value()?.length === 0) {
+      <div class="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <i class="pi pi-folder-open text-5xl text-gray-300 mb-4"></i>
+        <p class="text-xl font-medium text-gray-500">Nenhuma anotação encontrada.</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (note of notes.value(); track note.id) {
+          <p-card
+            class="block cursor-pointer hover:shadow-lg transition-shadow"
+            (click)="navigateTo(note.id)">
+            <div class="flex flex-col gap-3">
+              <h2 class="text-xl font-semibold line-clamp-2">{{ note.title }}</h2>
+              
+              <div class="flex items-center justify-between mt-auto pt-2">
+                <span class="text-xs text-gray-400 uppercase">
+                  <i class="pi pi-calendar mr-1"></i>
+                  Anotação
+                </span>
+                @if (note.has_embedding) {
+                  <p-tag value="Com embedding" severity="success" />
+                }
+              </div>
+            </div>
+          </p-card>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Botão Flutuante (FAB) -->
+  <p-button
+    icon="pi pi-plus"
+    [rounded]="true"
+    severity="primary"
+    [disabled]="true"
+    size="large"
+    class="fixed bottom-8 right-8 z-50 shadow-2xl"
+    styleClass="w-16 h-16"
+    pTooltip="Nova Anotação"
+    tooltipPosition="left"
+  />
+</div>

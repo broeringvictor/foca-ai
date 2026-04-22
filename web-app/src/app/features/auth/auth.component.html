@@ -1,0 +1,144 @@
+<p-toast />
+
+<div class="min-h-screen flex items-center justify-center bg-gray-50">
+  <div class="w-full max-w-md">
+    <p-card>
+      <p-tabs [value]="activeTab()" (valueChange)="activeTab.set($event)">
+        <p-tablist>
+          <p-tab value="login">Entrar</p-tab>
+          <p-tab value="register">Criar conta</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+          <!-- Login Tab -->
+          <p-tabpanel value="login">
+            <div class="flex flex-col gap-4 pt-4">
+              <div class="flex flex-col gap-1">
+                <label for="login-email" class="font-medium text-sm">E-mail</label>
+                <input
+                  id="login-email"
+                  type="email"
+                  pInputText
+                  [formField]="loginForm.email"
+                  placeholder="seu@email.com"
+                  class="w-full"
+                />
+                @if (loginForm.email().touched() && loginForm.email().invalid()) {
+                  <small class="text-red-500">{{ loginForm.email().errors()[0]?.message }}</small>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label for="login-password" class="font-medium text-sm">Senha</label>
+                <input
+                  id="login-password"
+                  type="password"
+                  pInputText
+                  [formField]="loginForm.password"
+                  placeholder="Sua senha"
+                  class="w-full"
+                />
+                @if (loginForm.password().touched() && loginForm.password().invalid()) {
+                  <small class="text-red-500">{{ loginForm.password().errors()[0]?.message }}</small>
+                }
+              </div>
+
+              <p-button
+                label="Entrar"
+                styleClass="w-full"
+                (onClick)="onLoginSubmit()"
+              />
+            </div>
+          </p-tabpanel>
+
+          <!-- Register Tab -->
+          <p-tabpanel value="register">
+            <div class="flex flex-col gap-4 pt-4">
+              <div class="grid grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1">
+                  <label for="reg-first" class="font-medium text-sm">Nome</label>
+                  <input
+                    id="reg-first"
+                    type="text"
+                    pInputText
+                    [formField]="registerForm.first_name"
+                    placeholder="João"
+                    class="w-full"
+                  />
+                  @if (registerForm.first_name().touched() && registerForm.first_name().invalid()) {
+                    <small class="text-red-500">{{ registerForm.first_name().errors()[0]?.message }}</small>
+                  }
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label for="reg-last" class="font-medium text-sm">Sobrenome</label>
+                  <input
+                    id="reg-last"
+                    type="text"
+                    pInputText
+                    [formField]="registerForm.last_name"
+                    placeholder="Silva"
+                    class="w-full"
+                  />
+                  @if (registerForm.last_name().touched() && registerForm.last_name().invalid()) {
+                    <small class="text-red-500">{{ registerForm.last_name().errors()[0]?.message }}</small>
+                  }
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label for="reg-email" class="font-medium text-sm">E-mail</label>
+                <input
+                  id="reg-email"
+                  type="email"
+                  pInputText
+                  [formField]="registerForm.email"
+                  placeholder="seu@email.com"
+                  class="w-full"
+                />
+                @if (registerForm.email().touched() && registerForm.email().invalid()) {
+                  <small class="text-red-500">{{ registerForm.email().errors()[0]?.message }}</small>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label for="reg-password" class="font-medium text-sm">Senha</label>
+                <input
+                  id="reg-password"
+                  type="password"
+                  pInputText
+                  [formField]="registerForm.password"
+                  placeholder="Mínimo 8 caracteres"
+                  class="w-full"
+                />
+                @if (registerForm.password().touched() && registerForm.password().invalid()) {
+                  <small class="text-red-500">{{ registerForm.password().errors()[0]?.message }}</small>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label for="reg-confirm" class="font-medium text-sm">Confirmar senha</label>
+                <input
+                  id="reg-confirm"
+                  type="password"
+                  pInputText
+                  [formField]="registerForm.password_confirm"
+                  placeholder="Repita a senha"
+                  class="w-full"
+                />
+                @if (registerForm.password_confirm().touched() && registerForm.password_confirm().invalid()) {
+                  <small class="text-red-500">{{ registerForm.password_confirm().errors()[0]?.message }}</small>
+                }
+              </div>
+
+              <p-button
+                label="Criar conta"
+                styleClass="w-full"
+                (onClick)="onRegisterSubmit()"
+              />
+            </div>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </p-card>
+  </div>
+</div>
