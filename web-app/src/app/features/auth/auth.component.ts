@@ -10,7 +10,6 @@ import { Button } from 'primeng/button';
 import { Toast } from 'primeng/toast';
 import { AuthService } from '../../core/auth/auth.service';
 import { UsersService } from '../../core/auth/users.service';
-import { RegisterDTO } from '../../core/models/api.models';
 
 interface RegisterFormModel {
   first_name: string;
@@ -77,8 +76,7 @@ export class AuthComponent {
   async onRegisterSubmit() {
     await submit(this.registerForm, async () => {
       try {
-        const { password_confirm: _, ...dto } = this.registerModel();
-        await firstValueFrom(this.usersService.register(dto as RegisterDTO));
+        await firstValueFrom(this.usersService.register(this.registerModel()));
         this.messageService.add({
           severity: 'success', summary: 'Conta criada!',
           detail: 'Faça login para continuar.', life: 4000,
