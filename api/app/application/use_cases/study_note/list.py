@@ -9,9 +9,9 @@ class ListStudyNotes:
         self._repository = repository
 
     async def execute(self, user_id: UUID) -> ListStudyNotesResponse:
-        summaries = await self._repository.find_summaries_by_user_id(user_id)
+        notes = await self._repository.find_all_by_user_id(user_id)
         items = [
-            StudyNoteListItem(id=note_id, title=title, has_embedding=has_embedding)
-            for note_id, title, has_embedding in summaries
+            StudyNoteListItem(id=note.id, title=note.title, has_embedding=note.embedding is not None)
+            for note in notes
         ]
         return ListStudyNotesResponse(items=items)

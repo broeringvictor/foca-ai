@@ -47,6 +47,11 @@ class StudyNoteRepository:
         model.questions = [str(qid) for qid in study_note.questions]
         model.updated_at = study_note.updated_at
 
+    async def delete(self, study_note_id: UUID) -> None:
+        from sqlalchemy import delete as sa_delete
+        stmt = sa_delete(StudyNoteModel).where(StudyNoteModel.id == study_note_id)
+        await self._session.execute(stmt)
+
     # ── busca ──────────────────────────────────────────────────────────────────
 
     async def find_by_id(self, study_note_id: UUID) -> StudyNote | None:
