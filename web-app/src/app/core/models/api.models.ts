@@ -18,7 +18,7 @@ export interface GetMeResponse {
   is_active: boolean; created_at: string; updated_at: string;
 }
 
-export interface RegisterDTO { first_name: string; last_name: string; email: string; password: string; }
+export interface RegisterDTO { first_name: string; last_name: string; email: string; password: string; password_confirm: string; }
 
 export interface StudyNoteListItem { id: string; title: string; has_embedding: boolean; }
 export interface ListStudyNotesResponse { items: StudyNoteListItem[]; }
