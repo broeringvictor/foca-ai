@@ -1,0 +1,36 @@
+# monorepo exclusions
+
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/*.pyo
+**/*.pyd
+**/.venv/
+**/.pytest_cache/
+**/.ruff_cache/
+api/.env
+api/.env.*
+
+# Node / JS
+**/node_modules/
+**/dist/
+**/tmp/
+**/out-tsc/
+web-app/.env
+web-app/.env.*
+
+# IDEs
+**/.idea/
+**/.vscode/
+*.iml
+*.swp
+*.swo
+
+# System
+.DS_Store
+Thumbs.db
+
+# Agents & Claude (explicitly allow)
+!.agents/
+!.claude/

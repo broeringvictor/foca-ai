@@ -1,0 +1,47 @@
+name: foca_app
+description: Aplicativo de estudos para o Exame de Ordem (OAB).
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Routing
+  go_router: ^14.6.1
+
+  # HTTP client
+  dio: ^5.7.0
+  dio_cookie_manager: ^3.1.1
+  cookie_jar: ^4.0.8
+  path_provider: ^2.1.4
+
+  # Serialization / immutable models
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # UI
+  flutter_markdown: ^0.7.4
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  riverpod_generator: ^2.6.1
+  custom_lint: ^0.7.0
+  riverpod_lint: ^2.6.1
+
+flutter:
+  uses-material-design: true

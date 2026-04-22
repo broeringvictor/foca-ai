@@ -1,0 +1,2671 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/auth/authenticate": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "authenticate",
+        "description": "Autentica um usuário e retorna um token JWT via cookie HttpOnly",
+        "operationId": "authenticate_api_v1_auth_authenticate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthenticateDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Credenciais inválidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "create",
+        "operationId": "create_user_api_v1_users__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email já cadastrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "me",
+        "description": "Retorna os dados do usuário autenticado",
+        "operationId": "get_me_api_v1_users_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Token inválido ou expirado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuário não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/study-notes/": {
+      "get": {
+        "tags": [
+          "study-notes"
+        ],
+        "summary": "list",
+        "description": "Lista as notas de estudo do usuário autenticado.",
+        "operationId": "list_study_notes_api_v1_study_notes__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListStudyNotesResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "study-notes"
+        ],
+        "summary": "create",
+        "description": "Cria uma nova nota de estudo a partir de um arquivo Markdown.\n\n**Como enviar:**\n- `title` e `description` via formulário.\n- `content_file` opcional com arquivo `.md` ou `.markdown`.\n- `tags` opcionais para categorização.",
+        "operationId": "create_study_note_api_v1_study_notes__post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_study_note_api_v1_study_notes__post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateStudyNoteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/exams/": {
+      "get": {
+        "tags": [
+          "exams"
+        ],
+        "summary": "list",
+        "description": "Lista todos os exames cadastrados.",
+        "operationId": "list_exams_api_v1_exams__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListExamsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "exams"
+        ],
+        "summary": "create",
+        "description": "Cria um novo exame.",
+        "operationId": "create_exam_api_v1_exams__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExamDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateExamResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/exams/{exam_id}": {
+      "get": {
+        "tags": [
+          "exams"
+        ],
+        "summary": "get",
+        "description": "Retorna um exame pelo id.",
+        "operationId": "get_exam_api_v1_exams__exam_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "exam_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Exam Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetExamResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exame não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "exams"
+        ],
+        "summary": "update",
+        "description": "Atualiza campos de um exame existente.",
+        "operationId": "update_exam_api_v1_exams__exam_id__patch",
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "exam_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Exam Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExamDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateExamResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exame não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "exams"
+        ],
+        "summary": "delete",
+        "description": "Remove um exame pelo id.",
+        "operationId": "delete_exam_api_v1_exams__exam_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "exam_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Exam Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteExamResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exame não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/questions/": {
+      "post": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "create",
+        "description": "Cria uma nova questão vinculada a um exame.",
+        "operationId": "create_question_api_v1_questions__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuestionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateQuestionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/questions/{question_id}": {
+      "get": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "get",
+        "description": "Retorna uma questão pelo id.",
+        "operationId": "get_question_api_v1_questions__question_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Question Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetQuestionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Questão não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "update",
+        "description": "Atualiza campos de uma questão existente.",
+        "operationId": "update_question_api_v1_questions__question_id__patch",
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Question Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQuestionDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateQuestionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Questão não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "delete",
+        "description": "Remove uma questão pelo id.",
+        "operationId": "delete_question_api_v1_questions__question_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Question Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteQuestionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Questão não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/questions/exam/{exam_id}": {
+      "get": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "list by exam",
+        "description": "Lista todas as questões de um exame.",
+        "operationId": "list_questions_by_exam_api_v1_questions_exam__exam_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "exam_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Exam Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListQuestionsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/questions/{question_id}/check": {
+      "post": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "check answer",
+        "description": "Verifica se a alternativa enviada é a correta e retorna booleano.",
+        "operationId": "check_answer_api_v1_questions__question_id__check_post",
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Question Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckAnswerDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckAnswerResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Questão não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/questions/categorize": {
+      "post": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "categorize",
+        "description": "Classifica automaticamente as questões de uma prova OAB usando o serviço de categorização.",
+        "operationId": "categorize_questions_api_v1_questions_categorize_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategorizeQuestionsDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategorizeQuestionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ]
+      }
+    },
+    "/api/v1/questions/exam/{exam_id}/add-answer-key": {
+      "post": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "add answer key",
+        "description": "Importa o gabarito oficial de um PDF e atualiza as questões de um exame.",
+        "operationId": "add_answer_key_api_v1_questions_exam__exam_id__add_answer_key_post",
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "exam_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Exam Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_add_answer_key_api_v1_questions_exam__exam_id__add_answer_key_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddAnswerKeyToExamResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro no processamento do PDF",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exame não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/questions/review-from-pdf": {
+      "post": {
+        "tags": [
+          "questions"
+        ],
+        "summary": "extract + categorize",
+        "description": "Extrai questões de um PDF, categoriza e retorna uma lista para revisão humana em uma única chamada.",
+        "operationId": "review_questions_from_pdf_api_v1_questions_review_from_pdf_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_review_questions_from_pdf_api_v1_questions_review_from_pdf_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewQuestionsFromPDFResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entrada inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro de validação",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearerWithCookie": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddAnswerKeyToExamResponse": {
+        "properties": {
+          "exam_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Exam Id"
+          },
+          "questions_updated": {
+            "type": "integer",
+            "title": "Questions Updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exam_id",
+          "questions_updated"
+        ],
+        "title": "AddAnswerKeyToExamResponse"
+      },
+      "Alternative": {
+        "type": "string",
+        "enum": [
+          "A",
+          "B",
+          "C",
+          "D"
+        ],
+        "title": "Alternative",
+        "description": "Alternativa de resposta de uma questão objetiva.\n\nOAB utiliza 4 alternativas (A-D)."
+      },
+      "AreaDistributionValidation": {
+        "properties": {
+          "counts_by_area": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts By Area"
+          },
+          "total_questions": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Total Questions",
+            "examples": [
+              80
+            ]
+          },
+          "distorted_areas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Distorted Areas"
+          },
+          "is_within_expected_distribution": {
+            "type": "boolean",
+            "title": "Is Within Expected Distribution",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_questions"
+        ],
+        "title": "AreaDistributionValidation"
+      },
+      "AuthenticateDTO": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 4,
+            "format": "email",
+            "title": "Email",
+            "examples": [
+              "email@exemple.com"
+            ]
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 8,
+            "title": "Password",
+            "description": "A senha deve conter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.",
+            "examples": [
+              "Senha@1234"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "AuthenticateDTO"
+      },
+      "AuthenticateResponse": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token",
+            "examples": [
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "AuthenticateResponse"
+      },
+      "Body_add_answer_key_api_v1_questions_exam__exam_id__add_answer_key_post": {
+        "properties": {
+          "pdf_file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Pdf File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pdf_file"
+        ],
+        "title": "Body_add_answer_key_api_v1_questions_exam__exam_id__add_answer_key_post"
+      },
+      "Body_create_study_note_api_v1_study_notes__post": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "content_file": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "Body_create_study_note_api_v1_study_notes__post"
+      },
+      "Body_review_questions_from_pdf_api_v1_questions_review_from_pdf_post": {
+        "properties": {
+          "header_height": {
+            "type": "integer",
+            "title": "Header Height",
+            "default": 65
+          },
+          "footer_height": {
+            "type": "integer",
+            "title": "Footer Height",
+            "default": 60
+          },
+          "column_split": {
+            "type": "integer",
+            "title": "Column Split",
+            "default": 298
+          },
+          "pdf_file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Pdf File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pdf_file"
+        ],
+        "title": "Body_review_questions_from_pdf_api_v1_questions_review_from_pdf_post"
+      },
+      "CategorizeQuestionsDTO": {
+        "properties": {
+          "exam": {
+            "$ref": "#/components/schemas/RawExam"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exam"
+        ],
+        "title": "CategorizeQuestionsDTO"
+      },
+      "CategorizeQuestionsResponse": {
+        "properties": {
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            },
+            "type": "array",
+            "title": "Questions"
+          },
+          "questions_count": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Questions Count",
+            "examples": [
+              80
+            ]
+          },
+          "area_validation": {
+            "$ref": "#/components/schemas/AreaDistributionValidation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "questions_count",
+          "area_validation"
+        ],
+        "title": "CategorizeQuestionsResponse"
+      },
+      "CheckAnswerDTO": {
+        "properties": {
+          "answer": {
+            "$ref": "#/components/schemas/Alternative",
+            "examples": [
+              "A"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer"
+        ],
+        "title": "CheckAnswerDTO"
+      },
+      "CheckAnswerResponse": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Question Id",
+            "examples": [
+              "01965366-a7bf-8c8d-b791-b2fef0ddf742"
+            ]
+          },
+          "is_correct": {
+            "type": "boolean",
+            "title": "Is Correct",
+            "examples": [
+              true
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id",
+          "is_correct"
+        ],
+        "title": "CheckAnswerResponse"
+      },
+      "CreateExamDTO": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 4,
+            "title": "Name",
+            "examples": [
+              "XL Exame de Ordem Unificado"
+            ]
+          },
+          "edition": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "title": "Edition",
+            "examples": [
+              40
+            ]
+          },
+          "year": {
+            "type": "integer",
+            "maximum": 2100,
+            "minimum": 2000,
+            "title": "Year",
+            "examples": [
+              2024
+            ]
+          },
+          "board": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Board",
+            "examples": [
+              "FGV"
+            ]
+          },
+          "first_phase_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Phase Date",
+            "examples": [
+              "2024-03-24"
+            ]
+          },
+          "second_phase_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Second Phase Date",
+            "examples": [
+              "2024-05-19"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "edition",
+          "year",
+          "board"
+        ],
+        "title": "CreateExamDTO"
+      },
+      "CreateExamResponse": {
+        "properties": {
+          "exam_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Exam Id",
+            "examples": [
+              "01965354-a47f-816a-a4ce-f4fa7f87f617"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "examples": [
+              "XL Exame de Ordem Unificado"
+            ]
+          },
+          "edition": {
+            "type": "integer",
+            "title": "Edition",
+            "examples": [
+              40
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "examples": [
+              "2026-04-16T20:30:00Z"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "exam_id",
+          "name",
+          "edition",
+          "created_at"
+        ],
+        "title": "CreateExamResponse"
+      },
+      "CreateQuestionDTO": {
+        "properties": {
+          "exam_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Exam Id",
+            "examples": [
+              "01965354-a47f-816a-a4ce-f4fa7f87f617"
+            ]
+          },
+          "statement": {
+            "type": "string",
+            "maxLength": 1500,
+            "minLength": 4,
+            "title": "Statement",
+            "examples": [
+              "Qual a cor do cavalo branco de Napoleão?"
+            ]
+          },
+          "area": {
+            "$ref": "#/components/schemas/LawArea",
+            "examples": [
+              "etica_profissional"
+            ]
+          },
+          "correct": {
+            "$ref": "#/components/schemas/Alternative",
+            "examples": [
+              "A"
+            ]
+          },
+          "alternative_a": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Alternative A",
+            "examples": [
+              "Branco"
+            ]
+          },
+          "alternative_b": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Alternative B",
+            "examples": [
+              "Preto"
+            ]
+          },
+          "alternative_c": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Alternative C",
+            "examples": [
+              "Marrom"
+            ]
+          },
+          "alternative_d": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Alternative D",
+            "examples": [
+              "Cinza"
+            ]
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "examples": [
+              [
+                "história",
+                "curiosidades"
+              ]
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "exam_id",
+          "statement",
+          "area",
+          "correct",
+          "alternative_a",
+          "alternative_b",
+          "alternative_c",
+          "alternative_d"
+        ],
+        "title": "CreateQuestionDTO"
+      },
+      "CreateQuestionResponse": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Question Id",
+            "examples": [
+              "01965366-a7bf-8c8d-b791-b2fef0ddf742"
+            ]
+          },
+          "statement": {
+            "type": "string",
+            "title": "Statement",
+            "examples": [
+              "Qual a cor do cavalo branco de Napoleão?"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "examples": [
+              "2026-04-16T20:30:00Z"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id",
+          "statement",
+          "created_at"
+        ],
+        "title": "CreateQuestionResponse"
+      },
+      "CreateStudyNoteResponse": {
+        "properties": {
+          "study_note_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Study Note Id",
+            "examples": [
+              "01965366-a7bf-8c8d-b791-b2fef0ddf742"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "examples": [
+              "Resumo de SQLAlchemy Async"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "examples": [
+              "2026-04-16T20:30:00Z"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "study_note_id",
+          "title",
+          "created_at"
+        ],
+        "title": "CreateStudyNoteResponse"
+      },
+      "CreateUserDTO": {
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 3,
+            "title": "First Name",
+            "examples": [
+              "Gentil João"
+            ]
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 3,
+            "title": "Last Name",
+            "examples": [
+              "da Silva"
+            ]
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 4,
+            "format": "email",
+            "title": "Email",
+            "examples": [
+              "email@exemple.com"
+            ]
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 8,
+            "title": "Password",
+            "description": "A senha deve conter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.",
+            "examples": [
+              "Senha@1234"
+            ]
+          },
+          "password_confirm": {
+            "type": "string",
+            "title": "Password Confirm"
+          }
+        },
+        "type": "object",
+        "required": [
+          "first_name",
+          "last_name",
+          "email",
+          "password",
+          "password_confirm"
+        ],
+        "title": "CreateUserDTO"
+      },
+      "CreateUserResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "User Id"
+          },
+          "name": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "name",
+          "email"
+        ],
+        "title": "CreateUserResponse"
+      },
+      "DeleteExamResponse": {
+        "properties": {
+          "exam_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Exam Id",
+            "examples": [
+              "01965354-a47f-816a-a4ce-f4fa7f87f617"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": "Exam deleted successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exam_id"
+        ],
+        "title": "DeleteExamResponse"
+      },
+      "DeleteQuestionResponse": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Question Id",
+            "examples": [
+              "01965366-a7bf-8c8d-b791-b2fef0ddf742"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": "Question deleted successfully"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id"
+        ],
+        "title": "DeleteQuestionResponse"
+      },
+      "ErrorItem": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "message"
+        ],
+        "title": "ErrorItem"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorItem"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorResponse"
+      },
+      "GetExamResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "edition": {
+            "type": "integer",
+            "title": "Edition"
+          },
+          "year": {
+            "type": "integer",
+            "title": "Year"
+          },
+          "board": {
+            "type": "string",
+            "title": "Board"
+          },
+          "first_phase_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Phase Date"
+          },
+          "second_phase_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Second Phase Date"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "edition",
+          "year",
+          "board",
+          "first_phase_date",
+          "second_phase_date",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "GetExamResponse"
+      },
+      "GetMeResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "User Id"
+          },
+          "name": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "name",
+          "email",
+          "is_active",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "GetMeResponse"
+      },
+      "GetQuestionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Id"
+          },
+          "exam_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Exam Id"
+          },
+          "statement": {
+            "type": "string",
+            "title": "Statement"
+          },
+          "area": {
+            "$ref": "#/components/schemas/LawArea"
+          },
+          "alternative_a": {
+            "type": "string",
+            "title": "Alternative A"
+          },
+          "alternative_b": {
+            "type": "string",
+            "title": "Alternative B"
+          },
+          "alternative_c": {
+            "type": "string",
+            "title": "Alternative C"
+          },
+          "alternative_d": {
+            "type": "string",
+            "title": "Alternative D"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "exam_id",
+          "statement",
+          "area",
+          "alternative_a",
+          "alternative_b",
+          "alternative_c",
+          "alternative_d",
+          "tags",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "GetQuestionResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LawArea": {
+        "type": "string",
+        "enum": [
+          "direito_constitucional",
+          "direitos_humanos",
+          "etica_profissional",
+          "filosofia_do_direito",
+          "direito_internacional",
+          "direito_tributario",
+          "direito_administrativo",
+          "direito_ambiental",
+          "direito_civil",
+          "direito_do_consumidor",
+          "eca",
+          "direito_empresarial",
+          "direito_penal",
+          "direito_processual_civil",
+          "direito_processual_penal",
+          "direito_do_trabalho",
+          "direito_processual_do_trabalho",
+          "direito_previdenciario",
+          "direito_financeiro"
+        ],
+        "title": "LawArea",
+        "description": "Áreas do direito cobradas na 1ª fase do Exame de Ordem (OAB)."
+      },
+      "ListExamsResponse": {
+        "properties": {
+          "exams": {
+            "items": {
+              "$ref": "#/components/schemas/GetExamResponse"
+            },
+            "type": "array",
+            "title": "Exams"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exams"
+        ],
+        "title": "ListExamsResponse"
+      },
+      "ListQuestionsResponse": {
+        "properties": {
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/GetQuestionResponse"
+            },
+            "type": "array",
+            "title": "Questions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "questions"
+        ],
+        "title": "ListQuestionsResponse"
+      },
+      "ListStudyNotesResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StudyNoteListItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "ListStudyNotesResponse"
+      },
+      "Name": {
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "title": "First Name",
+            "description": "Primeiro nome do usuário"
+          },
+          "last_name": {
+            "type": "string",
+            "title": "Last Name",
+            "description": "Sobrenome do usuário"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "Nome completo formatado.",
+            "readOnly": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "first_name",
+          "last_name",
+          "value"
+        ],
+        "title": "Name",
+        "description": "Nome completo do usuário.\n\nValida e formata o nome e sobrenome, garantindo regras de tamanho\ne caracteres permitidos.\n\nAtributos:\n    first_name: Primeiro nome.\n    last_name: Sobrenome.\n    value: Nome completo formatado (campo computado)."
+      },
+      "Question": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Id",
+            "description": "UUID8 gerado automaticamente."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Data de criação (UTC)."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Data da última modificação (UTC)."
+          },
+          "exam_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Exam Id"
+          },
+          "number": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "title": "Number"
+          },
+          "statement": {
+            "type": "string",
+            "maxLength": 1500,
+            "minLength": 4,
+            "title": "Statement"
+          },
+          "area": {
+            "$ref": "#/components/schemas/LawArea"
+          },
+          "correct": {
+            "$ref": "#/components/schemas/Alternative"
+          },
+          "alternative_a": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Alternative A"
+          },
+          "alternative_b": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Alternative B"
+          },
+          "alternative_c": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Alternative C"
+          },
+          "alternative_d": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Alternative D"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1,
+            "minimum": 0,
+            "title": "Confidence",
+            "default": 0
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "unclassified"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exam_id",
+          "number",
+          "statement",
+          "area",
+          "correct",
+          "alternative_a",
+          "alternative_b",
+          "alternative_c",
+          "alternative_d"
+        ],
+        "title": "Question",
+        "description": "Questo objetiva de um exame (ex: OAB 1 fase).\n\n:ivar exam_id: Exam.id -> UUID8.\n:ivar number: Numero da questao no caderno (1-80).\n:ivar statement: Enunciado da questo (4-1500 caracteres).\n:ivar area: Área do direito da questão.\n:ivar correct: Alternativa correta (A-D).\n:ivar alternative_a: Texto da alternativa A (1-500 caracteres).\n:ivar alternative_b: Texto da alternativa B (1-500 caracteres).\n:ivar alternative_c: Texto da alternativa C (1-500 caracteres).\n:ivar alternative_d: Texto da alternativa D (1-500 caracteres).\n:ivar tags: Tags livres (mx 20, cada uma at 30 caracteres).\n:ivar confidence: Confianca na classificacao da area.\n:ivar source: Fonte da classificacao (ex: initial, review)."
+      },
+      "RawExam": {
+        "properties": {
+          "edition": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "title": "Edition"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 4,
+            "title": "Name"
+          },
+          "exam_type": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "title": "Exam Type"
+          },
+          "color": {
+            "type": "string",
+            "minLength": 2,
+            "title": "Color"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/RawQuestion"
+            },
+            "type": "array",
+            "title": "Questions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "edition",
+          "name",
+          "exam_type",
+          "color"
+        ],
+        "title": "RawExam",
+        "description": "Prova completa extraída do PDF: cabeçalho + questões parseadas."
+      },
+      "RawQuestion": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "title": "Number",
+            "description": "Número da questão no caderno (1-80)"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 4,
+            "title": "Statement",
+            "description": "Enunciado"
+          },
+          "alternative_a": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Alternative A"
+          },
+          "alternative_b": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Alternative B"
+          },
+          "alternative_c": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Alternative C"
+          },
+          "alternative_d": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Alternative D"
+          }
+        },
+        "type": "object",
+        "required": [
+          "number",
+          "statement",
+          "alternative_a",
+          "alternative_b",
+          "alternative_c",
+          "alternative_d"
+        ],
+        "title": "RawQuestion",
+        "description": "Questão parseada do PDF, ainda sem gabarito, área ou tags."
+      },
+      "ReviewQuestionsFromPDFResponse": {
+        "properties": {
+          "extracted_questions_count": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Extracted Questions Count",
+            "examples": [
+              80
+            ]
+          },
+          "categorized_questions_count": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Categorized Questions Count",
+            "examples": [
+              80
+            ]
+          },
+          "area_validation": {
+            "$ref": "#/components/schemas/AreaDistributionValidation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "extracted_questions_count",
+          "categorized_questions_count",
+          "area_validation"
+        ],
+        "title": "ReviewQuestionsFromPDFResponse"
+      },
+      "StudyNoteListItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "has_embedding": {
+            "type": "boolean",
+            "title": "Has Embedding"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "has_embedding"
+        ],
+        "title": "StudyNoteListItem"
+      },
+      "UpdateExamDTO": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150,
+                "minLength": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "examples": [
+              "XL Exame de Ordem Unificado"
+            ]
+          },
+          "edition": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edition",
+            "examples": [
+              40
+            ]
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 2100,
+                "minimum": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year",
+            "examples": [
+              2024
+            ]
+          },
+          "board": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Board",
+            "examples": [
+              "FGV"
+            ]
+          },
+          "first_phase_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Phase Date",
+            "examples": [
+              "2024-03-24"
+            ]
+          },
+          "second_phase_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Second Phase Date",
+            "examples": [
+              "2024-05-19"
+            ]
+          }
+        },
+        "type": "object",
+        "title": "UpdateExamDTO"
+      },
+      "UpdateExamResponse": {
+        "properties": {
+          "exam_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Exam Id",
+            "examples": [
+              "01965354-a47f-816a-a4ce-f4fa7f87f617"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "examples": [
+              "XL Exame de Ordem Unificado"
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "examples": [
+              "2026-04-16T20:45:00Z"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "exam_id",
+          "name",
+          "updated_at"
+        ],
+        "title": "UpdateExamResponse"
+      },
+      "UpdateQuestionDTO": {
+        "properties": {
+          "statement": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1500,
+                "minLength": 4
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement",
+            "examples": [
+              "Enunciado atualizado"
+            ]
+          },
+          "area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LawArea"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "examples": [
+              "direito_penal"
+            ]
+          },
+          "correct": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Alternative"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "examples": [
+              "B"
+            ]
+          },
+          "alternative_a": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alternative A"
+          },
+          "alternative_b": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alternative B"
+          },
+          "alternative_c": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alternative C"
+          },
+          "alternative_d": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alternative D"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags",
+            "examples": [
+              [
+                "tag1",
+                "tag2"
+              ]
+            ]
+          }
+        },
+        "type": "object",
+        "title": "UpdateQuestionDTO"
+      },
+      "UpdateQuestionResponse": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "format": "uuid8",
+            "title": "Question Id",
+            "examples": [
+              "01965366-a7bf-8c8d-b791-b2fef0ddf742"
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "examples": [
+              "2026-04-16T20:45:00Z"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id",
+          "updated_at"
+        ],
+        "title": "UpdateQuestionResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearerWithCookie": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/api/v1/auth/authenticate"
+          }
+        }
+      }
+    }
+  }
+}
