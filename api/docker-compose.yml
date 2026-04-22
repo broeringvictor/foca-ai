@@ -20,7 +20,7 @@ services:
       LLM__MAX_TOKENS: 1000
       LLM__MAX_RETRIES: 6
   db:
-    image: postgres:18
+    image: pgvector/pgvector:pg18
     restart: unless-stopped
     environment:
       POSTGRES_DB: foca-ai
