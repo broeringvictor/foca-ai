@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, status
+from fastapi import APIRouter, Depends, Form, Query, status
 
 from app.api.dependecies.auth import get_current_user_id
 from app.api.dependecies.question import (
@@ -9,11 +9,18 @@ from app.api.dependecies.question import (
     get_check_answer_dependency,
     get_create_question_dependency,
     get_delete_question_dependency,
+    get_generate_embeddings_for_exam_dependency,
+    get_next_question_by_exam_dependency,
     get_pdf_bytes_for_review,
     get_question_dependency,
     get_review_questions_from_pdf_dependency,
     get_update_question_dependency,
     list_questions_by_exam_dependency,
+)
+from app.api.dependecies.study_note import get_find_related_study_notes_dependency
+from app.application.dto.study_note.related_dto import FindRelatedStudyNotesResponse
+from app.application.use_cases.study_note.find_related_to_question import (
+    FindRelatedStudyNotes,
 )
 from app.api.errors.schemas import ErrorResponse
 from app.application.dto.question.add_answer_key_dto import (
@@ -36,6 +43,7 @@ from app.application.dto.question.delete_dto import DeleteQuestionResponse
 from app.application.dto.question.get_dto import (
     GetQuestionResponse,
     ListQuestionsResponse,
+    PaginatedQuestionResponse,
 )
 from app.application.dto.question.review_from_pdf_dto import ReviewQuestionsFromPDFResponse
 from app.application.dto.question.update_dto import (
@@ -46,7 +54,12 @@ from app.application.use_cases.question.categorize import CategorizeQuestions
 from app.application.use_cases.question.check_answer import CheckAnswer
 from app.application.use_cases.question.create import CreateQuestion
 from app.application.use_cases.question.delete import DeleteQuestion
-from app.application.use_cases.question.get import GetQuestion, ListQuestionsByExam
+from app.application.use_cases.question.generate_embeddings import GenerateEmbeddingsForExam
+from app.application.use_cases.question.get import (
+    GetNextQuestionByExam,
+    GetQuestion,
+    ListQuestionsByExam,
+)
 from app.application.use_cases.question.review_from_pdf import ReviewQuestionsFromPDF
 from app.application.use_cases.question.update import UpdateQuestion
 from app.domain.value_objects.raw_exam import ExtractionOptions
@@ -104,6 +117,34 @@ async def list_questions_by_exam(
     exam_id: UUID,
     use_case: ListQuestionsByExam = Depends(list_questions_by_exam_dependency),
 ) -> ListQuestionsResponse:
+    return await use_case.execute(exam_id)
+
+
+@router.get(
+    "/exam/{exam_id}/next",
+    summary="get next question",
+    description="Retorna uma questão específica de um exame baseada no índice (0 a N-1).",
+    response_model=PaginatedQuestionResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def get_next_question_by_exam(
+    exam_id: UUID,
+    index: int = Query(0, ge=0),
+    use_case: GetNextQuestionByExam = Depends(get_next_question_by_exam_dependency),
+) -> PaginatedQuestionResponse:
+    return await use_case.execute(exam_id, index)
+
+
+@router.post(
+    "/exam/{exam_id}/generate-embeddings",
+    summary="generate exam embeddings",
+    description="Gera embeddings para todas as questões de um exame que ainda não possuem.",
+    status_code=status.HTTP_200_OK,
+)
+async def generate_exam_embeddings(
+    exam_id: UUID,
+    use_case: GenerateEmbeddingsForExam = Depends(get_generate_embeddings_for_exam_dependency),
+) -> dict:
     return await use_case.execute(exam_id)
 
 
@@ -198,6 +239,31 @@ async def add_answer_key(
 ) -> AddAnswerKeyToExamResponse:
     input_data = AddAnswerKeyToExamDTO(exam_id=exam_id, pdf_bytes=pdf_bytes)
     return await use_case.execute(input_data)
+
+
+@router.post(
+    "/{question_id}/related-study-notes",
+    summary="related study notes",
+    description=(
+        "Busca as notas de estudo do usuário semanticamente próximas da questão "
+        "(kNN via embeddings) e salva automaticamente nas notas com score ≥ 0.65."
+    ),
+    response_model=FindRelatedStudyNotesResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        400: {"model": ErrorResponse, "description": "Questão sem embedding"},
+        404: {"model": ErrorResponse, "description": "Questão não encontrada"},
+    },
+)
+async def related_study_notes(
+    question_id: UUID,
+    limit: int = Query(5, ge=1, le=20),
+    user_id: UUID = Depends(get_current_user_id),
+    use_case: FindRelatedStudyNotes = Depends(get_find_related_study_notes_dependency),
+) -> FindRelatedStudyNotesResponse:
+    return await use_case.execute(
+        user_id=user_id, question_id=question_id, limit=limit
+    )
 
 
 @router.post(

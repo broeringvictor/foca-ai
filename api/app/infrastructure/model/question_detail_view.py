@@ -22,6 +22,10 @@ class QuestionDetailView:
     statement: Mapped[str] = mapped_column(String(1500))
     area: Mapped[str] = mapped_column(String(40))
     correct: Mapped[str] = mapped_column(String(1))
+    alternative_a: Mapped[str] = mapped_column(String(1000))
+    alternative_b: Mapped[str] = mapped_column(String(1000))
+    alternative_c: Mapped[str] = mapped_column(String(1000))
+    alternative_d: Mapped[str] = mapped_column(String(1000))
     tags: Mapped[list[str]] = mapped_column(
         JSONB().with_variant(JSON(), "sqlite")
     )

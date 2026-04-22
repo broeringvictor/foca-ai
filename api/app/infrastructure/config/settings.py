@@ -28,7 +28,6 @@ class Settings(BaseSettings):
         env_file=ENV_FILE,
         env_file_encoding="utf-8",
         env_nested_delimiter="__",
-        extra="ignore",
     )
 
     # CONFIG MAP
@@ -57,14 +56,14 @@ class Settings(BaseSettings):
     ## 4. LLM
     llm: LLMSettings = Field(default_factory=LLMSettings)
 
-    ## 5. Embedding
+    ## 5. EMBEDDING
     embedding: EmbeddingSettings = Field(default_factory=EmbeddingSettings)
 
     # SECRETS MAP
     POSTGRES_PASSWORD: str
     JWT_KEY: str
     ANTHROPIC_API_KEY: str
-    OPENAI_API_KEY: str = ""
+    OPENAI_API_KEY: str
 
     @property
     def password_hasher(self) -> PasswordHasher:

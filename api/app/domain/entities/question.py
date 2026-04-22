@@ -35,6 +35,18 @@ class Question(Entity):
     tags: Tags = Field(default_factory=list)
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     source: str = Field(default="unclassified")
+    embedding: list[float] | None = None
+
+    @property
+    def embedding_text(self) -> str:
+        """Texto usado como input do embedding: enunciado + alternativa correta."""
+        correct_text = {
+            Alternative.A: self.alternative_a,
+            Alternative.B: self.alternative_b,
+            Alternative.C: self.alternative_c,
+            Alternative.D: self.alternative_d,
+        }[self.correct]
+        return f"{self.statement}\n\n{correct_text}"
 
     @classmethod
     def create(
@@ -51,6 +63,7 @@ class Question(Entity):
         tags: list[str] | None = None,
         confidence: float = 0.0,
         source: str = "unclassified",
+        embedding: list[float] | None = None,
     ) -> "Question":
         return cls(
             exam_id=exam_id,
@@ -65,4 +78,5 @@ class Question(Entity):
             tags=tags or [],
             confidence=confidence,
             source=source,
+            embedding=embedding,
         )

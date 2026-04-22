@@ -8,9 +8,38 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.pool import StaticPool
 
 from main import app
+from app.api.dependecies.embeddings import get_embedding_service_dependency
+from app.domain.services.embedding_service import IEmbeddingService
 from app.infrastructure.model import table_registry
 from app.infrastructure.session import get_session
 from tests.factories.user import UserFactory
+
+EMBEDDING_DIMENSIONS = 3072
+
+
+class FakeEmbeddingService(IEmbeddingService):
+    """Deterministic stand-in for OpenAIEmbeddingService used across tests."""
+
+    def __init__(self, dimensions: int = EMBEDDING_DIMENSIONS) -> None:
+        self._dimensions = dimensions
+
+    async def embed_query(self, text: str) -> list[float] | None:
+        if not text or not text.strip():
+            return None
+        return self._vector_for(text)
+
+    async def embed_documents(
+        self, texts: list[str]
+    ) -> list[list[float] | None]:
+        return [
+            self._vector_for(t) if t and t.strip() else None for t in texts
+        ]
+
+    def _vector_for(self, text: str) -> list[float]:
+        # Simple hash-based seed so equal inputs return equal vectors.
+        seed = sum(ord(c) for c in text) or 1
+        base = (seed % 97) / 97.0
+        return [base] * self._dimensions
 
 logger.disable("app")
 
@@ -50,7 +79,12 @@ async def session(setup_db) -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest.fixture(scope="function")
-def client(setup_db):
+def fake_embedding_service() -> FakeEmbeddingService:
+    return FakeEmbeddingService()
+
+
+@pytest.fixture(scope="function")
+def client(setup_db, fake_embedding_service):
     async def get_session_override():
         async with TestingSessionLocal() as session:
             try:
@@ -61,6 +95,9 @@ def client(setup_db):
                 raise
 
     app.dependency_overrides[get_session] = get_session_override
+    app.dependency_overrides[get_embedding_service_dependency] = (
+        lambda: fake_embedding_service
+    )
 
     with TestClient(app) as test_client:
         yield test_client

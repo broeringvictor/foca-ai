@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import UUID8, Field
 
 from app.domain.entities.base import Entity
@@ -12,7 +14,7 @@ class StudyNote(Entity):
     :ivar description: str opcional, 4-500 caracteres.
     :ivar content: str opcional, até 20000 caracteres (Markdown).
     :ivar tags: Tags livres (máx 20, cada uma até 30 caracteres).
-    :ivar questions: Lista de IDs de questões relacionadas à nota.
+    :ivar questions: IDs de questões relacionadas (score >= 0.65).
     """
 
     user_id: UUID8
@@ -20,7 +22,12 @@ class StudyNote(Entity):
     description: str | None = Field(None, min_length=4, max_length=500)
     content: str | None = Field(None, max_length=20000)
     tags: Tags = Field(default_factory=list)
-    questions: list[str] = Field(default_factory=list)
+    embedding: list[float] | None = None
+    questions: list[UUID] = Field(default_factory=list)
+
+    def add_question(self, question_id: UUID) -> None:
+        if question_id not in self.questions:
+            self.questions.append(question_id)
 
     @classmethod
     def create(
@@ -30,7 +37,7 @@ class StudyNote(Entity):
         description: str | None = None,
         content: str | None = None,
         tags: list[str] | None = None,
-        questions: list[str] | None = None,
+        embedding: list[float] | None = None,
     ) -> "StudyNote":
         return cls(
             user_id=user_id,
@@ -38,5 +45,5 @@ class StudyNote(Entity):
             description=description,
             content=content,
             tags=tags or [],
-            questions=questions or [],
+            embedding=embedding,
         )

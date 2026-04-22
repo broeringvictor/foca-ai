@@ -70,6 +70,8 @@ class ReviewQuestionsFromPDF:
         await self._exam_repository.save(exam)
 
         # 2. Categorize and Persist Questions
+        # O embedding é gerado depois em AddAnswerKeyToExam, pois depende
+        # da alternativa correta (statement + correct), ainda desconhecida aqui.
         questions = self._categorizer.classify(raw_exam, exam_id=exam.id)
 
         for question in questions:

@@ -34,7 +34,6 @@ class AddAnswerKeyToExam:
             raise NotFoundError("Exame não encontrado")
 
         # 2. Extrair o gabarito do PDF baseado no tipo do exame
-        # O ExtractOABAnswerKeyService.extract espera (pdf_bytes, exam_type)
         try:
             answer_map = self._answer_key_service.extract(
                 input_data.pdf_bytes, exam_type=exam.exam_type
@@ -45,14 +44,13 @@ class AddAnswerKeyToExam:
 
         # 3. Buscar todas as questões do exame
         questions = await self._question_repository.find_all_by_exam_id(exam.id)
-        
-        updated_count = 0
-        for question in questions:
-            if question.number in answer_map:
-                # Atualiza a alternativa correta
-                question.correct = answer_map[question.number]
-                await self._question_repository.update(question)
-                updated_count += 1
+
+        updated_questions = [q for q in questions if q.number in answer_map]
+        for question in updated_questions:
+            question.correct = answer_map[question.number]
+            await self._question_repository.update(question)
+
+        updated_count = len(updated_questions)
 
         # 4. Commit explícito
         await self._session.commit()

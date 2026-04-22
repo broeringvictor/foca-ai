@@ -3,15 +3,22 @@ from pathlib import Path
 from fastapi import Depends, File, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.dependecies.embeddings import get_embedding_service_dependency
 from app.api.errors.exceptions import BadRequestError
 from app.application.use_cases.question.add_answer_key import AddAnswerKeyToExam
 from app.application.use_cases.question.categorize import CategorizeQuestions
 from app.application.use_cases.question.check_answer import CheckAnswer
 from app.application.use_cases.question.create import CreateQuestion
 from app.application.use_cases.question.delete import DeleteQuestion
-from app.application.use_cases.question.get import GetQuestion, ListQuestionsByExam
+from app.application.use_cases.question.generate_embeddings import GenerateEmbeddingsForExam
+from app.application.use_cases.question.get import (
+    GetNextQuestionByExam,
+    GetQuestion,
+    ListQuestionsByExam,
+)
 from app.application.use_cases.question.review_from_pdf import ReviewQuestionsFromPDF
 from app.application.use_cases.question.update import UpdateQuestion
+from app.domain.services.embedding_service import IEmbeddingService
 from app.domain.services.oab_extractor_service import IOABExtractorService
 from app.domain.services.question_categorization_service import IQuestionCategorizationService
 from app.infrastructure.llm import get_llm_model
@@ -107,6 +114,23 @@ def list_questions_by_exam_dependency(
     session: AsyncSession = Depends(get_session),
 ) -> ListQuestionsByExam:
     return ListQuestionsByExam(repository=QuestionRepository(session))
+
+
+def get_next_question_by_exam_dependency(
+    session: AsyncSession = Depends(get_session),
+) -> GetNextQuestionByExam:
+    return GetNextQuestionByExam(repository=QuestionRepository(session))
+
+
+def get_generate_embeddings_for_exam_dependency(
+    session: AsyncSession = Depends(get_session),
+    embedding_service: IEmbeddingService = Depends(get_embedding_service_dependency),
+) -> GenerateEmbeddingsForExam:
+    return GenerateEmbeddingsForExam(
+        repository=QuestionRepository(session),
+        embedding_service=embedding_service,
+        session=session,
+    )
 
 
 def get_check_answer_dependency(

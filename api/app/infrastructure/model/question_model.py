@@ -4,6 +4,7 @@ from datetime import datetime, UTC
 from typing import TYPE_CHECKING
 from uuid import UUID
 
+from pgvector.sqlalchemy import HALFVEC
 from sqlalchemy import JSON, DateTime, ForeignKey, String, Integer, Float
 from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -50,6 +51,12 @@ class QuestionModel:
     tags: Mapped[list[str]] = mapped_column(
         JSONB().with_variant(JSON(), "sqlite"),
         default_factory=list,
+    )
+
+    embedding: Mapped[list[float] | None] = mapped_column(
+        HALFVEC(3072).with_variant(JSON(), "sqlite"),
+        nullable=True,
+        default=None,
     )
 
     exam: Mapped["ExamModel"] = relationship(back_populates="questions", init=False)
