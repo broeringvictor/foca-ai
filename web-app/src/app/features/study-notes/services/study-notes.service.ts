@@ -23,28 +23,27 @@ export class StudyNotesService {
   }
 
   getById(id: string) {
-    return this.http.get<GetStudyNoteResponse>(`/api/v1/study-notes/${id}`).pipe(
+    // Garante que o ID seja uma string limpa e sem espaços
+    const cleanId = String(id).trim();
+    return this.http.get<GetStudyNoteResponse>(`/api/v1/study-notes/${cleanId}`).pipe(
       catchError((err) => {
+        // Loga o erro completo no console para depuração
+        console.error('Erro detalhado do backend:', err.error);
         const msg = err.error?.detail?.[0]?.message ?? 'Erro ao carregar anotacao';
         return throwError(() => new Error(msg));
       }),
     );
   }
 
-  /**
-   * Como não existe um endpoint direto para listar detalhes das questões de uma nota,
-   * primeiro buscamos a nota (que contém os IDs das questões) e depois buscamos cada questão.
-   */
   getQuestions(id: string) {
     return this.getById(id).pipe(
       switchMap((note) => {
         if (!note.questions || note.questions.length === 0) {
           return of([]);
         }
-        // Busca os detalhes de cada questão pelo ID
         const questionRequests = note.questions.map((qId) =>
           this.http.get<Question>(`/api/v1/questions/${qId}`).pipe(
-            catchError(() => of(null)) // Ignora questões individuais que falharem
+            catchError(() => of(null))
           )
         );
         return forkJoin(questionRequests).pipe(
