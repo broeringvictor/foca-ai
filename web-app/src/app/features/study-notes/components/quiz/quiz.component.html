@@ -35,7 +35,7 @@
     </div>
   } @else {
     <div class="flex flex-col gap-6">
-      <!-- Cabeçalho -->
+      <!-- Navegação Superior -->
       <div class="flex items-center justify-between h-12">
         <p-button 
           icon="pi pi-arrow-left" 
@@ -108,20 +108,10 @@
                 [ngClass]="{
                   'cursor-pointer': !state.hasSubmitted,
                   'pointer-events-none': state.hasSubmitted,
-                  
-                  /* Estado: Não respondido e não selecionado */
                   'border-surface-100 dark:border-surface-800 bg-surface-50/50 dark:bg-surface-950/30 hover:border-primary/40': !state.hasSubmitted && !isSelected,
-                  
-                  /* Estado: Selecionado (antes de enviar) */
                   'border-primary bg-primary/5 shadow-md shadow-primary/5': !state.hasSubmitted && isSelected,
-                  
-                  /* Estado: Após submissão - Correto */
                   'border-green-500 bg-green-500/10 shadow-lg shadow-green-500/5': isCorrect,
-                  
-                  /* Estado: Após submissão - Errado */
                   'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/5': isWrong,
-                  
-                  /* Estado: Outras alternativas após submissão */
                   'opacity-40 grayscale-[0.5] border-surface-100 dark:border-surface-800': state.hasSubmitted && !isSelected
                 }"
                 (click)="selectAnswer(alt.key)">
