@@ -60,9 +60,10 @@ async def list_study_notes(
 )
 async def get_study_note(
     study_note_id: UUID,
+    user_id: UUID = Depends(get_current_user_id),
     use_case: GetStudyNote = Depends(get_get_study_note_dependency),
 ) -> GetStudyNoteResponse:
-    return await use_case.execute(study_note_id)
+    return await use_case.execute(study_note_id, user_id)
 
 
 @router.post(
