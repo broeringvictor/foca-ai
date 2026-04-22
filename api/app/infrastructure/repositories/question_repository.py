@@ -70,11 +70,7 @@ class QuestionRepository:
     # ── busca ─────────────────────────────────────────────────────────────────
 
     async def find_by_id(self, question_id: UUID) -> Question | None:
-        stmt = (
-            select(QuestionModel)
-            .options(_COLS_WITHOUT_EMBEDDING)
-            .where(QuestionModel.id == question_id)
-        )
+        stmt = select(QuestionModel).where(QuestionModel.id == question_id)
         result = await self._session.execute(stmt)
         model: QuestionModel | None = result.scalar_one_or_none()
         if model is None:
@@ -84,20 +80,12 @@ class QuestionRepository:
     async def find_by_ids(self, question_ids: list[UUID]) -> list[Question]:
         if not question_ids:
             return []
-        stmt = (
-            select(QuestionModel)
-            .options(_COLS_WITHOUT_EMBEDDING)
-            .where(QuestionModel.id.in_(question_ids))
-        )
+        stmt = select(QuestionModel).where(QuestionModel.id.in_(question_ids))
         result = await self._session.execute(stmt)
         return [self._to_entity(m) for m in result.scalars().all()]
 
     async def find_all_by_exam_id(self, exam_id: UUID) -> list[Question]:
-        stmt = (
-            select(QuestionModel)
-            .options(_COLS_WITHOUT_EMBEDDING)
-            .where(QuestionModel.exam_id == exam_id)
-        )
+        stmt = select(QuestionModel).where(QuestionModel.exam_id == exam_id)
         result = await self._session.execute(stmt)
         return [self._to_entity(m) for m in result.scalars().all()]
 
@@ -106,7 +94,6 @@ class QuestionRepository:
     ) -> Question | None:
         stmt = (
             select(QuestionModel)
-            .options(_COLS_WITHOUT_EMBEDDING)
             .where(QuestionModel.exam_id == exam_id)
             .order_by(QuestionModel.number)
             .offset(index)

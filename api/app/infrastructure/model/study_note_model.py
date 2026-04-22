@@ -3,7 +3,7 @@ from datetime import datetime
 from uuid import UUID
 
 from pgvector.sqlalchemy import HALFVEC
-from sqlalchemy import String, DateTime, ForeignKey, JSON
+from sqlalchemy import DateTime, ForeignKey, JSON, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import TYPE_CHECKING

@@ -16,20 +16,20 @@ export class StudyNotesService {
     return this.http.get<ListStudyNotesResponse>('/api/v1/study-notes/').pipe(
       map((res) => res.items),
       catchError((err) => {
-        const msg = err.error?.detail?.[0]?.message ?? 'Erro ao carregar anotacoes';
+        const msg = this.extractErrorMessage(err);
         return throwError(() => new Error(msg));
       }),
     );
   }
 
   getById(id: string) {
-    // Garante que o ID seja uma string limpa e sem espaços
-    const cleanId = String(id).trim();
-    return this.http.get<GetStudyNoteResponse>(`/api/v1/study-notes/${cleanId}`).pipe(
+    // URL limpa conforme documentação
+    const url = `/api/v1/study-notes/${id.trim()}`;
+    return this.http.get<GetStudyNoteResponse>(url).pipe(
       catchError((err) => {
-        // Loga o erro completo no console para depuração
-        console.error('Erro detalhado do backend:', err.error);
-        const msg = err.error?.detail?.[0]?.message ?? 'Erro ao carregar anotacao';
+        // Se o erro for 422 no 'questions → 0', o problema é no dado retornado pelo servidor
+        console.error('Erro de validacao no backend (Response Validation Failure):', err.error);
+        const msg = this.extractErrorMessage(err);
         return throwError(() => new Error(msg));
       }),
     );
@@ -38,22 +38,41 @@ export class StudyNotesService {
   getQuestions(id: string) {
     return this.getById(id).pipe(
       switchMap((note) => {
-        if (!note.questions || note.questions.length === 0) {
+        // Se a nota vier, mas questions for nulo ou vazio
+        if (!note || !note.questions || note.questions.length === 0) {
           return of([]);
         }
-        const questionRequests = note.questions.map((qId) =>
-          this.http.get<Question>(`/api/v1/questions/${qId}`).pipe(
-            catchError(() => of(null))
-          )
-        );
+        
+        const questionRequests = note.questions.map((qId) => {
+          // Garante que qId seja string antes de concatenar
+          const cleanQId = typeof qId === 'string' ? qId : (qId as any).id || String(qId);
+          return this.http.get<Question>(`/api/v1/questions/${cleanQId}`).pipe(
+            catchError((err) => {
+              console.error(`Erro ao carregar questao ${cleanQId}:`, err);
+              return of(null);
+            })
+          );
+        });
+
         return forkJoin(questionRequests).pipe(
           map((results) => results.filter((q): q is Question => q !== null))
         );
       }),
       catchError((err) => {
-        const msg = err.message ?? 'Erro ao carregar questoes da nota';
+        const msg = err.message || 'Erro ao processar questoes';
         return throwError(() => new Error(msg));
       })
     );
+  }
+
+  private extractErrorMessage(err: any): string {
+    const detail = err.error?.detail;
+    if (Array.isArray(detail) && detail.length > 0) {
+      // Formata o erro de campo para algo legível
+      const d = detail[0];
+      if (d.field && d.message) return `${d.field}: ${d.message}`;
+      return d.msg || d.message || 'Erro de validacao';
+    }
+    return err.error?.message || err.message || 'Erro no servidor';
   }
 }

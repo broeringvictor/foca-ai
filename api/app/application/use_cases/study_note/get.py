@@ -23,7 +23,7 @@ class GetStudyNote:
             description=note.description,
             content=note.content,
             tags=list(note.tags),
-            questions=list(note.questions),
+            questions=[str(question_id) for question_id in note.questions],
             created_at=note.created_at,
             updated_at=note.updated_at,
         )

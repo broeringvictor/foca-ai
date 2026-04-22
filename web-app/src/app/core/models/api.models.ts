@@ -29,7 +29,7 @@ export interface GetStudyNoteResponse {
   description: string | null;
   content: string | null;
   tags: string[];
-  questions: string[];
+  questions: any[];
   created_at: string;
   updated_at: string;
 }

@@ -47,6 +47,12 @@ class StudyNoteRepository:
         model.questions = [str(qid) for qid in study_note.questions]
         model.updated_at = study_note.updated_at
 
+    async def update_embedding(self, study_note_id: UUID, embedding: list[float]) -> None:
+        model = await self._session.get(StudyNoteModel, study_note_id)
+        if model is None:
+            return
+        model.embedding = embedding
+
     async def delete(self, study_note_id: UUID) -> None:
         from sqlalchemy import delete as sa_delete
         stmt = sa_delete(StudyNoteModel).where(StudyNoteModel.id == study_note_id)
@@ -72,6 +78,13 @@ class StudyNoteRepository:
         result = await self._session.execute(stmt)
         models = result.scalars().all()
         return [self._to_entity(m) for m in models]
+
+    async def find_summaries_by_user_id(self, user_id: UUID) -> list[tuple[UUID, str, bool]]:
+        notes = await self.find_all_by_user_id(user_id)
+        return [
+            (note.id, note.title, note.embedding is not None)
+            for note in notes
+        ]
 
     async def find_by_embedding_similarity(
         self,
