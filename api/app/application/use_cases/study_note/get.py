@@ -12,7 +12,11 @@ class GetStudyNote:
     async def execute(self, study_note_id: UUID) -> GetStudyNoteResponse:
         note = await self._repository.find_by_id(study_note_id)
         if note is None:
-            raise NotFoundError("study note not found")
+            raise NotFoundError(
+                "study note not found",
+                field="study_note_id",
+                source="path",
+            )
         return GetStudyNoteResponse(
             id=note.id,
             title=note.title,
