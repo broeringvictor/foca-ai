@@ -1,0 +1,149 @@
+<div class="py-8 px-4">
+  @if (questionsResource.isLoading()) {
+    <div class="max-w-3xl mx-auto flex flex-col gap-6">
+      <div class="flex items-center justify-between mb-4">
+        <p-skeleton width="3rem" height="2rem" />
+        <p-skeleton width="10rem" height="1.5rem" />
+        <p-skeleton width="6rem" height="2rem" />
+      </div>
+      <p-card>
+        <div class="flex flex-col gap-6 p-2">
+          <p-skeleton width="6rem" height="1.5rem" />
+          <p-skeleton height="4rem" />
+          <div class="flex flex-col gap-2">
+            @for (s of [1,2,3,4]; track s) {
+              <p-skeleton height="3rem" />
+            }
+          </div>
+          <p-skeleton height="3rem" />
+        </div>
+      </p-card>
+    </div>
+  } @else if (questionsResource.status() === 'error') {
+    <div class="max-w-3xl mx-auto flex flex-col items-center justify-center min-h-[400px] gap-4">
+      <p-message severity="error" text="Erro ao carregar as questões." />
+      <p-button label="Voltar" icon="pi pi-arrow-left" (onClick)="goBack()" />
+    </div>
+  } @else if (questions().length === 0) {
+    <!-- Empty state -->
+    <div class="flex flex-col items-center justify-center min-h-[400px] gap-4">
+      <p-message severity="info" text="Nenhuma questão para estudar nesta anotação." />
+      <p-button label="Voltar" icon="pi pi-arrow-left" (onClick)="goBack()" />
+    </div>
+  } @else {
+    <div class="max-w-3xl mx-auto">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-4">
+        <p-button icon="pi pi-arrow-left" severity="secondary" [text]="true" (onClick)="goBack()" />
+        <span class="font-semibold text-lg">
+          Questão {{ currentIndex() + 1 }} de {{ questions().length }}
+        </span>
+        <div class="flex gap-2">
+          <p-button
+            icon="pi pi-chevron-left"
+            severity="secondary"
+            [rounded]="true"
+            [text]="true"
+            [disabled]="currentIndex() === 0"
+            (onClick)="prevQuestion()"
+          />
+          <p-button
+            icon="pi pi-chevron-right"
+            severity="secondary"
+            [rounded]="true"
+            [text]="true"
+            [disabled]="currentIndex() === questions().length - 1"
+            (onClick)="nextQuestion()"
+          />
+        </div>
+      </div>
+
+      <!-- Question Card -->
+      @if (currentQuestion(); as q) {
+        <p-card>
+          <div class="flex flex-col gap-4">
+            <!-- Area badge -->
+            <div>
+              <p-tag [value]="areaLabels[q.area]" severity="secondary" />
+            </div>
+
+            <!-- Statement -->
+            <p class="text-base leading-relaxed">{{ q.statement }}</p>
+
+            <!-- Alternatives -->
+            <div class="flex flex-col gap-2">
+              @for (alt of getAlternatives(q); track alt.key) {
+                <div
+                  class="border rounded p-3 cursor-pointer flex items-start gap-3 transition-colors"
+                  [class.border-blue-500]="!hasSubmitted() && selectedAnswer() === alt.key"
+                  [class.bg-blue-50]="!hasSubmitted() && selectedAnswer() === alt.key"
+                  [class.border-green-500]="hasSubmitted() && result()?.is_correct && selectedAnswer() === alt.key"
+                  [class.bg-green-50]="hasSubmitted() && result()?.is_correct && selectedAnswer() === alt.key"
+                  [class.border-red-500]="hasSubmitted() && !result()?.is_correct && selectedAnswer() === alt.key"
+                  [class.bg-red-50]="hasSubmitted() && !result()?.is_correct && selectedAnswer() === alt.key"
+                  [class.opacity-50]="hasSubmitted() && selectedAnswer() !== alt.key"
+                  [class.cursor-not-allowed]="hasSubmitted()"
+                  (click)="selectAnswer(alt.key)">
+                  <span class="font-bold text-gray-600 min-w-[1.25rem]">{{ alt.key }}.</span>
+                  <span class="text-sm">{{ alt.text }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Feedback -->
+            @if (hasSubmitted()) {
+              @if (result()?.is_correct) {
+                <p-message severity="success" text="Resposta correta!" />
+              } @else {
+                <p-message severity="error" text="Resposta incorreta." />
+              }
+            }
+
+            <!-- Confirm button -->
+            <p-button
+              label="Confirmar resposta"
+              [disabled]="selectedAnswer() === '' || hasSubmitted() || isLoading()"
+              [loading]="isLoading()"
+              styleClass="w-full"
+              (onClick)="confirmAnswer()"
+            />
+
+            <!-- Navigation buttons -->
+            <div class="flex justify-between border-t pt-4">
+              <p-button
+                label="Questão anterior"
+                icon="pi pi-chevron-left"
+                severity="secondary"
+                [text]="true"
+                [disabled]="currentIndex() === 0"
+                (onClick)="prevQuestion()"
+              />
+              <p-button
+                label="Próxima questão"
+                iconPos="right"
+                icon="pi pi-chevron-right"
+                severity="secondary"
+                [text]="true"
+                [disabled]="currentIndex() === questions().length - 1"
+                (onClick)="nextQuestion()"
+              />
+            </div>
+          </div>
+        </p-card>
+
+        <!-- Numbered navigation -->
+        <div class="flex flex-wrap gap-2 mt-4 justify-center">
+          @for (q of questions(); track q.id; let i = $index) {
+            <p-button
+              [label]="(i + 1).toString()"
+              [severity]="currentIndex() === i ? 'primary' : 'secondary'"
+              [rounded]="true"
+              size="small"
+              (onClick)="jumpTo(i)"
+            />
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
