@@ -1,14 +1,18 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, resource } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
-import { Button } from 'primeng/button';
-import { Card } from 'primeng/card';
-import { Message } from 'primeng/message';
-import { Tag } from 'primeng/tag';
-import { Skeleton } from 'primeng/skeleton';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { MessageModule } from 'primeng/message';
+import { TagModule } from 'primeng/tag';
+import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { QuestionsService } from '../../services/questions.service';
 import { StudyNotesService } from '../../services/study-notes.service';
 import { Alternative, CheckAnswerResponse, LawArea, Question } from '../../../../core/models/api.models';
+import { LoggerService } from '../../../../core/logger/logger.service';
 
 const LAW_AREA_LABELS: Record<LawArea, string> = {
   direito_constitucional: 'Direito Constitucional',
@@ -32,40 +36,69 @@ const LAW_AREA_LABELS: Record<LawArea, string> = {
   direito_financeiro: 'Direito Financeiro',
 };
 
+interface QuestionState {
+  selectedAnswer: Alternative | '';
+  hasSubmitted: boolean;
+  result: CheckAnswerResponse | null;
+  error?: string;
+}
+
 @Component({
   standalone: true,
   selector: 'app-quiz',
   templateUrl: './quiz.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button, Card, Message, Tag, Skeleton],
+  imports: [
+    CommonModule, 
+    ButtonModule, 
+    CardModule, 
+    MessageModule, 
+    TagModule, 
+    SkeletonModule, 
+    TooltipModule,
+    ProgressSpinnerModule
+  ],
 })
 export class QuizComponent {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private questionsService = inject(QuestionsService);
   private studyNotesService = inject(StudyNotesService);
+  private logger = inject(LoggerService);
 
   readonly noteId = signal(this.route.snapshot.paramMap.get('id') ?? '');
   
   readonly questionsResource = resource({
     params: this.noteId,
-    loader: ({ params: id }) => {
+    loader: async ({ params: id }) => {
+      this.logger.debug(`Carregando questões para o quiz da nota ${id}`);
       const stateQuestions = history.state?.questions as Question[] | undefined;
       if (stateQuestions && stateQuestions.length > 0) {
         return Promise.resolve(stateQuestions);
       }
-      return firstValueFrom(this.studyNotesService.getQuestions(id));
+      try {
+        return await firstValueFrom(this.studyNotesService.getQuestions(id));
+      } catch (err: any) {
+        this.logger.error(`Erro ao carregar questões para a nota ${id}`, err);
+        throw err;
+      }
     },
   });
 
   readonly questions = computed(() => this.questionsResource.value() ?? []);
   readonly currentIndex = signal(0);
   readonly currentQuestion = computed(() => this.questions()[this.currentIndex()]);
-  readonly selectedAnswer = signal<Alternative | ''>('');
-  readonly hasSubmitted = signal(false);
-  readonly result = signal<CheckAnswerResponse | null>(null);
-  readonly isLoading = signal(false);
+  
+  protected states = signal<Map<string, QuestionState>>(new Map());
 
+  readonly currentState = computed(() => {
+    const q = this.currentQuestion();
+    if (!q) return { selectedAnswer: '', hasSubmitted: false, result: null } as QuestionState;
+    return this.states().get(q.id) || { selectedAnswer: '', hasSubmitted: false, result: null } as QuestionState;
+  });
+
+  readonly isLoading = signal(false);
+  readonly globalError = signal<string | null>(null);
   readonly areaLabels = LAW_AREA_LABELS;
 
   getAlternatives(q: Question) {
@@ -78,25 +111,36 @@ export class QuizComponent {
   }
 
   selectAnswer(key: Alternative) {
-    if (!this.hasSubmitted()) {
-      this.selectedAnswer.set(key);
-    }
+    const q = this.currentQuestion();
+    if (!q || this.currentState().hasSubmitted) return;
+    this.updateState(q.id, { selectedAnswer: key, error: undefined });
   }
 
   async confirmAnswer() {
     const q = this.currentQuestion();
-    const answer = this.selectedAnswer();
-    if (!q || !answer || this.hasSubmitted()) return;
+    const state = this.currentState();
+    
+    if (!q || !state.selectedAnswer || state.hasSubmitted || this.isLoading()) return;
 
+    this.logger.info(`Validando resposta da questão ${q.id}...`);
     this.isLoading.set(true);
+    this.globalError.set(null);
+
     try {
+      // Simula um delay pequeno para o usuário sentir que está "enviando"
       const result = await firstValueFrom(
-        this.questionsService.checkAnswer(q.id, { answer: answer as Alternative }),
+        this.questionsService.checkAnswer(q.id, { answer: state.selectedAnswer as Alternative })
       );
-      this.result.set(result);
-      this.hasSubmitted.set(true);
-    } catch {
-      // error already handled by service
+      
+      this.updateState(q.id, { hasSubmitted: true, result, error: undefined });
+      this.logger.info(`Questão ${q.id} validada com sucesso.`);
+    } catch (err: any) {
+      let errorMsg = 'Erro de conexão. Verifique sua internet.';
+      if (err.status === 404) errorMsg = 'Questão não encontrada no servidor.';
+      if (err.status >= 500) errorMsg = 'Erro interno do servidor. Tente mais tarde.';
+      
+      this.updateState(q.id, { error: errorMsg });
+      this.logger.error(`Erro ao validar questão ${q.id}`, err);
     } finally {
       this.isLoading.set(false);
     }
@@ -104,29 +148,28 @@ export class QuizComponent {
 
   nextQuestion() {
     if (this.currentIndex() < this.questions().length - 1) {
-      this.resetState();
       this.currentIndex.update((i) => i + 1);
     }
   }
 
   prevQuestion() {
     if (this.currentIndex() > 0) {
-      this.resetState();
       this.currentIndex.update((i) => i - 1);
     }
   }
 
   jumpTo(index: number) {
-    if (index !== this.currentIndex()) {
-      this.resetState();
+    if (index >= 0 && index < this.questions().length) {
       this.currentIndex.set(index);
     }
   }
 
-  private resetState() {
-    this.selectedAnswer.set('');
-    this.hasSubmitted.set(false);
-    this.result.set(null);
+  private updateState(questionId: string, partial: Partial<QuestionState>) {
+    this.states.update(map => {
+      const current = map.get(questionId) || { selectedAnswer: '', hasSubmitted: false, result: null };
+      map.set(questionId, { ...current, ...partial });
+      return new Map(map);
+    });
   }
 
   goBack() {

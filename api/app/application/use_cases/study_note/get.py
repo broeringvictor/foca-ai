@@ -9,9 +9,9 @@ class GetStudyNote:
     def __init__(self, repository: IStudyNoteRepository) -> None:
         self._repository = repository
 
-    async def execute(self, study_note_id: UUID) -> GetStudyNoteResponse:
+    async def execute(self, study_note_id: UUID, user_id: UUID) -> GetStudyNoteResponse:
         note = await self._repository.find_by_id(study_note_id)
-        if note is None:
+        if note is None or note.user_id != user_id:
             raise NotFoundError(
                 "study note not found",
                 field="study_note_id",

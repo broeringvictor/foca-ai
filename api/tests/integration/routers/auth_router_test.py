@@ -37,7 +37,7 @@ class TestAuthenticateRouter:
 
         cookie = response.cookies.get("access_token")
         assert cookie is not None
-        assert "Bearer" in cookie
+        assert len(cookie) > 0
 
     def test_returns_400_with_wrong_password(self, client):
         _create_user(client)

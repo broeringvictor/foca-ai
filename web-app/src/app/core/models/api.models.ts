@@ -49,7 +49,11 @@ export interface Question {
 }
 export interface ListQuestionsResponse { questions: Question[]; }
 export interface CheckAnswerDTO { answer: Alternative; }
-export interface CheckAnswerResponse { question_id: string; is_correct: boolean; }
+export interface CheckAnswerResponse { 
+  question_id: string; 
+  is_correct: boolean; 
+  correct_answer?: Alternative; 
+}
 
 export interface ErrorItem { field: string; message: string; source?: string | null; }
 export interface ErrorResponse { detail: ErrorItem[]; }
