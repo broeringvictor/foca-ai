@@ -1,5 +1,5 @@
-<div class="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 transition-colors duration-300">
-  <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+<div class="flex flex-col gap-6 p-6 rounded-tl-[3rem] bg-slate-50 dark:bg-[#0f172a] min-h-full transition-colors duration-300">
+  <div class="max-w-4xl mx-auto w-full py-4 px-4 sm:px-6 lg:px-8">
     
     @if (questionsResource.isLoading() && questions().length === 0) {
       <div class="flex flex-col gap-8 animate-pulse">
@@ -8,7 +8,7 @@
           <div class="w-32 h-6 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
           <div class="w-24 h-10 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
         </div>
-        <div class="h-[500px] bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm"></div>
+        <div class="h-[500px] bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm"></div>
       </div>
     } @else if (questionsResource.status() === 'error' && questions().length === 0) {
       <div class="flex flex-col items-center justify-center py-24 text-center bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -31,7 +31,7 @@
     } @else {
       <div class="flex flex-col gap-6">
         <!-- Header Compacto -->
-        <div class="flex items-center justify-between bg-white/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-4 z-40 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm">
+        <div class="flex items-center justify-between bg-white/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-40 p-4 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm">
           <p-button 
             icon="pi pi-arrow-left" 
             severity="secondary" 
@@ -67,7 +67,7 @@
         @if (currentQuestion(); as q) {
           @let state = currentState();
           
-          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden flex flex-col">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[3rem] shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden flex flex-col">
             
             <!-- Question Content -->
             <div class="p-8 sm:p-10 space-y-8">
@@ -187,6 +187,13 @@
                         <p class="text-sm">A alternativa correta é a <b>{{ getCorrectAnswer(state.result) }}</b>.</p>
                       </div>
                     </div>
+                    
+                    @if (isStudyMode()) {
+                       <div class="p-4 bg-red-500/5 border border-red-500/10 rounded-xl text-center">
+                         <p class="text-[10px] font-black text-red-500 uppercase tracking-widest">Status: AGAIN (0)</p>
+                         <p class="text-xs text-secondary-500 mt-1">Esta questão voltará para revisão em breve.</p>
+                       </div>
+                    }
                   }
 
                   <!-- Stats -->

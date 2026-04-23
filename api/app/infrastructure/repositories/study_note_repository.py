@@ -86,16 +86,17 @@ class StudyNoteRepository:
     async def find_due_by_user_id(self, user_id: UUID) -> list[StudyNote]:
         today = datetime.now(timezone.utc).date()
         
-        # Filtra por user_id no banco e depois filtra por data no python (mais compatível entre postgres e sqlite)
         stmt = (
             select(StudyNoteModel)
-            .where(StudyNoteModel.user_id == user_id)
+            .where(
+                StudyNoteModel.user_id == user_id,
+                StudyNoteModel.review_progress["next_review_date"].astext <= today.isoformat()
+            )
         )
         
         result = await self._session.execute(stmt)
         models = result.scalars().all()
-        entities = [self._to_entity(m) for m in models]
-        return [e for e in entities if e.review_progress.next_review_date <= today]
+        return [self._to_entity(m) for m in models]
 
     async def find_summaries_by_user_id(self, user_id: UUID) -> list[tuple[UUID, str, bool]]:
         notes = await self.find_all_by_user_id(user_id)

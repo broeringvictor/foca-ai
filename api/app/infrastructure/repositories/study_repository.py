@@ -42,12 +42,17 @@ class StudyRepository:
 
     async def find_due_by_user_id(self, user_id: UUID) -> list[Study]:
         today = datetime.now(timezone.utc).date()
-        stmt = select(StudyModel).where(StudyModel.user_id == user_id)
+        # Filtro direto no banco via JSONB extraction para usar o índice funcional
+        stmt = (
+            select(StudyModel)
+            .where(
+                StudyModel.user_id == user_id,
+                StudyModel.review_progress["next_review_date"].astext <= today.isoformat()
+            )
+        )
         result = await self._session.execute(stmt)
         models = result.scalars().all()
-        
-        entities = [self._to_entity(m) for m in models]
-        return [e for e in entities if e.review_progress.next_review_date <= today]
+        return [self._to_entity(m) for m in models]
 
     @staticmethod
     def _to_entity(model: StudyModel) -> Study:

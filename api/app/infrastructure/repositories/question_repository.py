@@ -146,6 +146,27 @@ class QuestionRepository:
         result = await self._session.execute(stmt)
         return [self._to_entity(m) for m in result.scalars().all()]
 
+    async def find_low_rated_not_answered(
+        self, user_id: UUID, limit: int = 10
+    ) -> list[Question]:
+        from app.infrastructure.model.study_question_model import StudyQuestionModel
+        
+        answered_stmt = select(StudyQuestionModel.question_id).where(
+            StudyQuestionModel.user_id == user_id
+        )
+        
+        # Ordem ascendente para pegar as notas mais baixas
+        stmt = (
+            select(QuestionModel)
+            .options(_COLS_WITHOUT_EMBEDDING)
+            .where(QuestionModel.id.not_in(answered_stmt))
+            .order_by(QuestionModel.priority_score.asc())
+            .limit(limit)
+        )
+        
+        result = await self._session.execute(stmt)
+        return [self._to_entity(m) for m in result.scalars().all()]
+
     async def find_by_embedding_similarity(
         self,
         query_vector: list[float],

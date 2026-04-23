@@ -8,6 +8,7 @@ from app.application.use_cases.study.get_next_session import GetNextStudySession
 from app.infrastructure.repositories.question_repository import QuestionRepository
 from app.infrastructure.repositories.study_repository import StudyRepository
 from app.infrastructure.repositories.study_question_repository import StudyQuestionRepository
+from app.infrastructure.repositories.study_note_repository import StudyNoteRepository
 from app.infrastructure.session import get_session
 
 def get_list_user_study_progress_dependency(
@@ -43,5 +44,6 @@ def get_next_study_session_dependency(
     return GetNextStudySession(
         study_repository=StudyRepository(session),
         question_repository=QuestionRepository(session),
-        study_question_repository=StudyQuestionRepository(session)
+        study_question_repository=StudyQuestionRepository(session),
+        study_note_repository=StudyNoteRepository(session)
     )

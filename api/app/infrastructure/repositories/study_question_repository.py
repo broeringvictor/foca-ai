@@ -41,13 +41,17 @@ class StudyQuestionRepository:
 
     async def find_due_by_user_id(self, user_id: UUID, limit: int = 20) -> list[StudyQuestion]:
         from datetime import date
-        import sqlalchemy as sa
         today = date.today()
         
-        stmt = select(StudyQuestionModel).where(
-            StudyQuestionModel.user_id == user_id,
-            sa.cast(StudyQuestionModel.review_progress["next_review_date"].astext, sa.Date) <= today
-        ).order_by(sa.cast(StudyQuestionModel.review_progress["next_review_date"].astext, sa.Date).asc()).limit(limit)
+        stmt = (
+            select(StudyQuestionModel)
+            .where(
+                StudyQuestionModel.user_id == user_id,
+                StudyQuestionModel.review_progress["next_review_date"].astext <= today.isoformat()
+            )
+            .order_by(StudyQuestionModel.review_progress["next_review_date"].astext.asc())
+            .limit(limit)
+        )
         
         result = await self._session.execute(stmt)
         models = result.scalars().all()

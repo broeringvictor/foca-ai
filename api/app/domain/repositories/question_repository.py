@@ -19,6 +19,9 @@ class IQuestionRepository(Protocol):
     async def find_top_rated_not_answered(
         self, user_id: UUID, limit: int = 10
     ) -> list[Question]: ...
+    async def find_low_rated_not_answered(
+        self, user_id: UUID, limit: int = 10
+    ) -> list[Question]: ...
     async def find_one_by_exam_id_at_index(
         self, exam_id: UUID, index: int
     ) -> Question | None: ...

@@ -5,8 +5,6 @@ from app.domain.enums.answer_quality import AnswerQuality
 from app.domain.enums.alternatives import Alternative
 from app.domain.value_objects.sm2_progress import Sm2Progress
 
-from app.application.dto.question.get_dto import QuestionListItem
-
 class QuestionWithProgressDTO(BaseModel):
     id: UUID
     statement: str
@@ -14,7 +12,6 @@ class QuestionWithProgressDTO(BaseModel):
     alternative_b: str
     alternative_c: str
     alternative_d: str
-    has_embedding: bool
     progress: Sm2Progress | None = None
 
 class StudyAreaProgressDTO(BaseModel):

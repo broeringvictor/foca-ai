@@ -21,7 +21,6 @@ from app.application.use_cases.study.get_next_session import GetNextStudySession
 router = APIRouter(
     prefix="/study",
     tags=["study"],
-    dependencies=[Depends(get_current_user_id)],
 )
 
 @router.get(
