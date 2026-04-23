@@ -11,7 +11,8 @@ from app.application.dto.study_note.related_dto import (
 from app.domain.repositories.question_repository import IQuestionRepository
 from app.domain.repositories.study_note_repository import IStudyNoteRepository
 
-_RELEVANCE_THRESHOLD = 0.65
+# TODO: Refine this threshold. 0.4 is a temporary value to increase matches.
+_RELEVANCE_THRESHOLD = 0.4
 
 
 class FindRelatedStudyNotes:

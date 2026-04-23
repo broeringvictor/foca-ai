@@ -12,3 +12,4 @@ from . import study_note_model as study_note_model  # noqa: E402
 from . import question_detail_view as question_detail_view  # noqa: E402
 from . import exam_stats_view as exam_stats_view  # noqa: E402
 from . import study_model as study_model  # noqa: E402
+from . import study_question_model as study_question_model  # noqa: E402

@@ -65,6 +65,24 @@ export class StudyNotesService {
     );
   }
 
+  generateEmbedding(id: string) {
+    return this.http.post<any>(`/api/v1/study-notes/${id}/embeddings`, {}).pipe(
+      catchError((err) => {
+        const msg = this.extractErrorMessage(err);
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
+  searchQuestions(id: string) {
+    return this.http.post<any>(`/api/v1/study-notes/${id}/questions`, {}).pipe(
+      catchError((err) => {
+        const msg = this.extractErrorMessage(err);
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
   private extractErrorMessage(err: any): string {
     const detail = err.error?.detail;
     if (Array.isArray(detail) && detail.length > 0) {

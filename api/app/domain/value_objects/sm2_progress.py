@@ -11,6 +11,17 @@ class Sm2Progress(BaseModel):
     next_review_date: date = Field(default_factory=lambda: datetime.now(timezone.utc).date())
     card_status: CardStatus = CardStatus.NEW
     lapsed_count: int = 0
+    correct_count: int = 0
+    wrong_count: int = 0
+
+    @property
+    def total_attempts(self) -> int:
+        return self.correct_count + self.wrong_count
+
+    @property
+    def success_rate(self) -> float:
+        total = self.total_attempts
+        return (self.correct_count / total) if total > 0 else 0.0
 
     @classmethod
     def create_default(cls) -> "Sm2Progress":
@@ -33,13 +44,21 @@ class Sm2Algorithm:
         if current_date is None:
             current_date = datetime.now(timezone.utc).date()
 
+        # Update counts
+        is_correct = quality != AnswerQuality.AGAIN
+        new_correct_count = current.correct_count + (1 if is_correct else 0)
+        new_wrong_count = current.wrong_count + (0 if is_correct else 1)
+
         if quality == AnswerQuality.AGAIN:
-            return Sm2Algorithm._handle_lapse(current, current_date)
+            next_state = Sm2Algorithm._handle_lapse(current, current_date)
+        elif current.card_status in (CardStatus.NEW, CardStatus.LEARNING):
+            next_state = Sm2Algorithm._handle_learning(current, quality, current_date)
+        else:
+            next_state = Sm2Algorithm._handle_review(current, quality, current_date)
 
-        if current.card_status in (CardStatus.NEW, CardStatus.LEARNING):
-            return Sm2Algorithm._handle_learning(current, quality, current_date)
-
-        return Sm2Algorithm._handle_review(current, quality, current_date)
+        next_state.correct_count = new_correct_count
+        next_state.wrong_count = new_wrong_count
+        return next_state
 
     @staticmethod
     def _handle_review(current: Sm2Progress, quality: AnswerQuality, current_date: date) -> Sm2Progress:

@@ -7,10 +7,20 @@ from app.domain.value_objects.sm2_progress import Sm2Progress
 
 from app.application.dto.question.get_dto import QuestionListItem
 
+class QuestionWithProgressDTO(BaseModel):
+    id: UUID
+    statement: str
+    alternative_a: str
+    alternative_b: str
+    alternative_c: str
+    alternative_d: str
+    has_embedding: bool
+    progress: Sm2Progress | None = None
+
 class StudyAreaProgressDTO(BaseModel):
     area: LawArea
     progress: Sm2Progress | None
-    questions: list[QuestionListItem] = Field(default_factory=list)
+    questions: list[QuestionWithProgressDTO] = Field(default_factory=list)
 
 class ListStudyProgressResponse(BaseModel):
     items: list[StudyAreaProgressDTO]

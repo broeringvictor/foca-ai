@@ -38,7 +38,8 @@ class QuestionFactory(factory_boy.Factory):
             alternative_d=kwargs.pop("alternative_d", _faker.sentence()),
             number=kwargs.pop("number", 1),
             confidence=kwargs.pop("confidence", 1.0),
-            source=kwargs.pop("source", "initial")
+            source=kwargs.pop("source", "initial"),
+            embedding=kwargs.pop("embedding", None)
         )
 
     @classmethod

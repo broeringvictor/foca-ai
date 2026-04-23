@@ -35,6 +35,7 @@ class Question(Entity):
     tags: Tags = Field(default_factory=list)
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     source: str = Field(default="unclassified")
+    priority_score: float = Field(default=0.0, ge=0.0, le=1.0)
     embedding: list[float] | None = None
 
     @property
@@ -63,6 +64,7 @@ class Question(Entity):
         tags: list[str] | None = None,
         confidence: float = 0.0,
         source: str = "unclassified",
+        priority_score: float = 0.0,
         embedding: list[float] | None = None,
     ) -> "Question":
         return cls(
@@ -78,5 +80,6 @@ class Question(Entity):
             tags=tags or [],
             confidence=confidence,
             source=source,
+            priority_score=priority_score,
             embedding=embedding,
         )

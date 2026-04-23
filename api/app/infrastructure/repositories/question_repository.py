@@ -22,6 +22,7 @@ _COLS_WITHOUT_EMBEDDING = load_only(
     QuestionModel.alternative_d,
     QuestionModel.tags,
     QuestionModel.confidence,
+    QuestionModel.priority_score,
     QuestionModel.source,
     QuestionModel.created_at,
     QuestionModel.updated_at,
@@ -124,6 +125,27 @@ class QuestionRepository:
         result = await self._session.execute(stmt)
         return int(result.scalar_one() or 0)
 
+    async def find_top_rated_not_answered(
+        self, user_id: UUID, limit: int = 10
+    ) -> list[Question]:
+        from app.infrastructure.model.study_question_model import StudyQuestionModel
+        
+        # Subquery para questões que o usuário já respondeu (tem progresso)
+        answered_stmt = select(StudyQuestionModel.question_id).where(
+            StudyQuestionModel.user_id == user_id
+        )
+        
+        stmt = (
+            select(QuestionModel)
+            .options(_COLS_WITHOUT_EMBEDDING)
+            .where(QuestionModel.id.not_in(answered_stmt))
+            .order_by(QuestionModel.priority_score.desc())
+            .limit(limit)
+        )
+        
+        result = await self._session.execute(stmt)
+        return [self._to_entity(m) for m in result.scalars().all()]
+
     async def find_by_embedding_similarity(
         self,
         query_vector: list[float],
@@ -152,8 +174,14 @@ class QuestionRepository:
 
     @staticmethod
     def _to_entity(model: QuestionModel) -> Question:
-        return Question(
-            id=model.id,
+        from sqlalchemy import inspect
+        insp = inspect(model)
+
+        embedding = None
+        if "embedding" not in insp.unloaded:
+            embedding = _coerce_embedding(model.embedding)
+
+        return Question(            id=model.id,
             exam_id=model.exam_id,
             number=model.number,
             statement=model.statement,
@@ -165,8 +193,9 @@ class QuestionRepository:
             alternative_d=model.alternative_d,
             tags=list(model.tags or []),
             confidence=model.confidence,
+            priority_score=model.priority_score,
             source=model.source,
-            embedding=_coerce_embedding(model.embedding),
+            embedding=embedding,
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -186,6 +215,7 @@ class QuestionRepository:
             alternative_d=question.alternative_d,
             tags=list(question.tags),
             confidence=question.confidence,
+            priority_score=question.priority_score,
             source=question.source,
             embedding=question.embedding,
             created_at=question.created_at,

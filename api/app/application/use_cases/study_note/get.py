@@ -24,6 +24,7 @@ class GetStudyNote:
             content=note.content,
             tags=list(note.tags),
             questions=[str(question_id) for question_id in note.questions],
+            has_embedding=note.embedding is not None,
             created_at=note.created_at,
             updated_at=note.updated_at,
         )

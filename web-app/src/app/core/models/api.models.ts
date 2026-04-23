@@ -30,6 +30,8 @@ export interface GetStudyNoteResponse {
   content: string | null;
   tags: string[];
   questions: any[];
+  has_embedding?: boolean;
+  embedded?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -53,6 +55,72 @@ export interface CheckAnswerResponse {
   question_id: string; 
   is_correct: boolean; 
   correct_answer?: Alternative; 
+}
+
+// Study endpoints models
+export interface Sm2Progress {
+  ease_factor: number;
+  interval_days: number;
+  next_review_date: string | null;
+  correct_count: number;
+  wrong_count: number;
+  success_rate: number;
+  card_status?: number;
+  lapsed_count?: number;
+}
+
+export interface StudyQuestionProgress {
+  correct_count: number;
+  wrong_count: number;
+  next_review_date: string | null;
+  success_rate: number;
+}
+
+export interface Question {
+  id: string;
+  exam_id: string;
+  statement: string;
+  area: LawArea;
+  alternative_a: string;
+  alternative_b: string;
+  alternative_c: string;
+  alternative_d: string;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+  progress?: StudyQuestionProgress;
+}
+
+export interface StudyDueArea {
+  area: LawArea;
+  questions: Question[];
+  progress: Sm2Progress;
+}
+
+export interface ListDueAreasResponse {
+  items: StudyDueArea[];
+}
+
+export interface StudyAreaProgressDTO {
+  area: LawArea;
+  progress: Sm2Progress;
+  questions_count?: number;
+}
+
+export interface ListStudyProgressResponse {
+  items: StudyAreaProgressDTO[];
+}
+
+export interface SubmitAreaReviewDTO {
+  question_id: string;
+  response: Alternative;
+  quality: number; // 0 to 5
+}
+
+export interface SubmitAreaReviewResponse {
+  is_correct: boolean;
+  correct_alternative: Alternative;
+  new_progress: Sm2Progress;
 }
 
 export interface ErrorItem { field: string; message: string; source?: string | null; }

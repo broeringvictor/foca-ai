@@ -53,7 +53,7 @@ export const appConfig: ApplicationConfig = {
       theme: {
         preset: VioletPreset,
         options: {
-          darkModeSelector: '.p-dark',
+          darkModeSelector: '.dark',
         },
       },
     }),

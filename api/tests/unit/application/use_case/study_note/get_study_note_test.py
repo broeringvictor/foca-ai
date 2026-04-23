@@ -30,3 +30,22 @@ class TestGetStudyNote:
         response = await use_case.execute(note.id, user_id)
 
         assert response.questions == [str(question_id)]
+        assert response.has_embedding is False
+
+    @pytest.mark.asyncio
+    async def test_execute_with_embedding_returns_has_embedding_true(self):
+        user_id = uuid8()
+        note = StudyNote.create(
+            user_id=user_id,
+            area=LawArea.CIVIL_PROCEDURE,
+            title="Nota com embedding",
+            embedding=[0.1, 0.2, 0.3],
+        )
+
+        repository = AsyncMock()
+        repository.find_by_id.return_value = note
+        use_case = GetStudyNote(repository=repository)
+
+        response = await use_case.execute(note.id, user_id)
+
+        assert response.has_embedding is True

@@ -12,5 +12,6 @@ class GetStudyNoteResponse(BaseModel):
     content: str | None
     tags: list[str]
     questions: list[str]
+    has_embedding: bool
     created_at: datetime = Field(..., examples=["2026-04-16T20:30:00Z"])
     updated_at: datetime = Field(..., examples=["2026-04-16T20:30:00Z"])

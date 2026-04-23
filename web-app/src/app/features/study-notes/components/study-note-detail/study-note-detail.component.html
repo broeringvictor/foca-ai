@@ -1,83 +1,110 @@
-<div class="py-8 px-4 sm:px-6 lg:px-8">
-  <div class="max-w-6xl mx-auto">
-    <div class="flex items-center gap-3 mb-8">
-      <p-button icon="pi pi-arrow-left" severity="secondary" [rounded]="true" [text]="true" (onClick)="goBack()" />
-      <h1 class="text-3xl font-bold">
-        @if (noteResource.isLoading()) {
-          Carregando...
-        } @else {
-          {{ noteResource.value()?.title ?? 'Anotação não encontrada' }}
-        }
-      </h1>
+<div class="min-h-screen bg-secondary-50 text-surface-900 dark:bg-secondary-950 dark:text-surface-950">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <div class="flex flex-col gap-8">
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+      <p-button 
+        icon="pi pi-arrow-left" 
+        severity="secondary" 
+        [rounded]="true" 
+        [text]="true" 
+        (onClick)="goBack()" 
+        styleClass="w-12 h-12"
+      />
+      <div class="space-y-1">
+        <h1 class="text-4xl font-black tracking-tight text-primary-700 dark:text-primary-300">
+          @if (noteResource.isLoading()) {
+            Carregando...
+          } @else {
+            {{ noteResource.value()?.title ?? 'Anotação não encontrada' }}
+          }
+        </h1>
+        <p class="text-secondary-700 dark:text-secondary-300 font-bold">
+          Detalhes da sua anotação e questões vinculadas.
+        </p>
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Left Panel: Note Content (Markdown) -->
-      <div class="flex flex-col gap-6">
-        <p-card styleClass="h-full shadow-sm">
-          <div class="p-2 prose max-w-none" [innerHTML]="htmlContent()"></div>
-          
-          @if (noteResource.isLoading()) {
-            <div class="flex flex-col gap-4 p-2">
-              <p-skeleton height="2rem" />
-              <p-skeleton height="1rem" width="80%" />
-              <p-skeleton height="1rem" width="90%" />
-              <p-skeleton height="1rem" width="70%" />
-            </div>
-          } @else if (noteResource.status() === 'error') {
-            <p-message severity="error" text="Erro ao carregar o conteúdo da anotação." />
-          }
-        </p-card>
+      <div class="lg:col-span-2">
+        <div class="bg-surface-0 dark:bg-surface-900 border border-secondary-200 dark:border-secondary-800 rounded-3xl overflow-hidden shadow-sm">
+          <div class="p-6 sm:p-10">
+            <div class="prose dark:prose-invert max-w-none" [innerHTML]="htmlContent()"></div>
+            
+            @if (noteResource.isLoading()) {
+              <div class="space-y-4">
+                <p-skeleton height="2rem" width="60%" />
+                <p-skeleton height="1rem" />
+                <p-skeleton height="1rem" />
+                <p-skeleton height="1rem" width="80%" />
+              </div>
+            } @else if (noteResource.status() === 'error') {
+              <div class="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400">
+                <i class="pi pi-exclamation-circle text-xl"></i>
+                <span class="font-bold">Erro ao carregar o conteúdo da anotação.</span>
+              </div>
+            }
+          </div>
+        </div>
       </div>
 
       <!-- Right Panel: Questions associated with the note -->
-      <div class="flex flex-col gap-6">
-        <p-card styleClass="shadow-sm">
-          <ng-template #header>
-            <div class="p-6 pb-2 border-b border-gray-100 font-semibold text-lg flex items-center justify-between">
-              <span><i class="pi pi-list mr-2"></i>Questões vinculadas</span>
-              <p-tag [value]="(questionsResource.value()?.length ?? 0).toString()" severity="info" [rounded]="true" />
-            </div>
-          </ng-template>
+      <div class="space-y-6">
+        <div class="bg-surface-0 dark:bg-surface-900 border border-secondary-200 dark:border-secondary-800 rounded-3xl overflow-hidden shadow-sm sticky top-10">
+          <div class="p-6 border-b border-secondary-100 dark:border-secondary-800 flex items-center justify-between bg-secondary-50 dark:bg-secondary-900/40">
+            <h2 class="font-bold text-lg text-primary-700 dark:text-primary-300 flex items-center gap-2">
+              <i class="pi pi-list text-primary"></i>
+              Questões
+            </h2>
+            <p-tag [value]="(questionsResource.value()?.length ?? 0).toString()" severity="primary" [rounded]="true" styleClass="px-3" />
+          </div>
 
-          <div class="p-2">
+          <div class="p-6">
             @if (questionsResource.isLoading()) {
-              <div class="flex flex-col gap-3">
+              <div class="space-y-4">
                 @for (s of [1,2,3]; track s) {
-                  <p-skeleton height="4rem" />
+                  <p-skeleton height="5rem" styleClass="rounded-2xl" />
                 }
               </div>
             } @else if (questionsResource.status() === 'error') {
-              <p-message severity="error" text="Erro ao carregar questões vinculadas." />
+              <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-600 dark:text-red-400 text-sm font-medium">
+                Erro ao carregar questões.
+              </div>
             } @else if ((questionsResource.value()?.length ?? 0) === 0) {
-              <div class="flex flex-col items-center justify-center py-6 text-gray-400">
-                <i class="pi pi-inbox text-4xl mb-2"></i>
-                <p class="text-sm">Nenhuma questão vinculada a esta anotação.</p>
+              <div class="flex flex-col items-center justify-center py-10 text-center space-y-4">
+                <div class="w-16 h-16 bg-secondary-100 dark:bg-secondary-800 rounded-full flex items-center justify-center">
+                  <i class="pi pi-inbox text-2xl text-secondary-400"></i>
+                </div>
+                <p class="text-secondary-600 dark:text-secondary-300 text-sm font-medium">Nenhuma questão vinculada.</p>
               </div>
             } @else {
-              <div class="flex flex-col gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+              <div class="space-y-4 max-h-125 overflow-y-auto pr-2 custom-scrollbar">
                 @for (q of questionsResource.value(); track q.id) {
-                  <div class="border border-gray-100 bg-gray-50 rounded-lg p-4 flex flex-col gap-2">
-                    <p-tag [value]="q.area" severity="secondary" [rounded]="true" class="self-start" />
-                    <p class="text-sm text-gray-700 leading-relaxed">{{ q.statement }}</p>
+                  <div class="border border-secondary-100 dark:border-secondary-800 bg-secondary-50 dark:bg-secondary-900/20 rounded-2xl p-4 space-y-3 hover:border-primary/30 transition-colors">
+                    <p-tag [value]="q.area" severity="secondary" [rounded]="true" styleClass="text-[10px] uppercase tracking-wider font-bold" />
+                    <p class="text-sm text-secondary-700 dark:text-secondary-200 leading-relaxed line-clamp-3">
+                      {{ q.statement }}
+                    </p>
                   </div>
                 }
               </div>
             }
 
-            <div class="mt-6">
+            <div class="mt-8">
               <p-button
-                label="Iniciar Estudo por Questões"
+                label="Iniciar Simulado"
                 icon="pi pi-play"
-                severity="success"
-                styleClass="w-full py-3 text-lg font-semibold rounded-xl shadow-lg shadow-green-100"
+                severity="primary"
+                styleClass="w-full py-4 text-lg font-bold rounded-2xl shadow-lg shadow-primary/20"
                 [disabled]="(questionsResource.value()?.length ?? 0) === 0"
                 (onClick)="startQuiz()"
               />
             </div>
           </div>
-        </p-card>
+        </div>
       </div>
     </div>
   </div>
+</div>
 </div>

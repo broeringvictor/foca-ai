@@ -1,200 +1,252 @@
-<div class="max-w-4xl mx-auto py-8 px-4">
-  @if (questionsResource.isLoading()) {
-    <div class="flex flex-col gap-6">
-      <div class="flex items-center justify-between h-12">
-        <p-skeleton width="4rem" height="2.5rem" styleClass="rounded-lg" />
-        <p-skeleton width="12rem" height="1.5rem" />
-        <p-skeleton width="4rem" height="2.5rem" styleClass="rounded-lg" />
-      </div>
-      
-      <div class="p-8 border border-surface-200 dark:border-surface-800 rounded-3xl bg-surface-0 dark:bg-surface-900 shadow-sm">
-        <p-skeleton width="8rem" height="1.5rem" styleClass="mb-6" />
-        <p-skeleton height="6rem" styleClass="mb-8" />
-        <div class="space-y-3">
-          @for (s of [1,2,3,4]; track s) {
-            <p-skeleton height="3.5rem" styleClass="rounded-xl" />
-          }
+<div class="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+  <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    
+    @if (questionsResource.isLoading() && questions().length === 0) {
+      <div class="flex flex-col gap-8 animate-pulse">
+        <div class="flex items-center justify-between h-14">
+          <div class="w-24 h-10 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
+          <div class="w-32 h-6 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
+          <div class="w-24 h-10 bg-slate-200 dark:bg-slate-800 rounded-xl"></div>
         </div>
+        <div class="h-[500px] bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm"></div>
       </div>
-    </div>
-  } @else if (questionsResource.status() === 'error') {
-    <div class="flex flex-col items-center justify-center py-20 text-center bg-red-50 dark:bg-red-950/20 rounded-3xl border-2 border-dashed border-red-200 dark:border-red-900/30">
-      <i class="pi pi-wifi text-4xl text-red-500 mb-4"></i>
-      <h3 class="text-xl font-bold text-red-700 dark:text-red-400">Falha na conexão</h3>
-      <p class="text-surface-600 dark:text-surface-400 mb-6">Não foi possível carregar as questões. Verifique sua internet.</p>
-      <div class="flex gap-3">
-        <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="questionsResource.reload()" />
-        <p-button label="Voltar" icon="pi pi-arrow-left" (onClick)="goBack()" severity="secondary" [text]="true" />
-      </div>
-    </div>
-  } @else if (questions().length === 0) {
-    <div class="flex flex-col items-center justify-center py-20 text-center bg-surface-50 dark:bg-surface-900/50 rounded-3xl border-2 border-dashed border-surface-200 dark:border-surface-800">
-      <i class="pi pi-info-circle text-4xl text-surface-400 mb-4"></i>
-      <h3 class="text-xl font-bold">Simulado sem questões</h3>
-      <p-button label="Voltar" icon="pi pi-arrow-left" (onClick)="goBack()" severity="secondary" class="mt-4" />
-    </div>
-  } @else {
-    <div class="flex flex-col gap-6">
-      <!-- Navegação Superior -->
-      <div class="flex items-center justify-between h-12">
-        <p-button 
-          icon="pi pi-arrow-left" 
-          severity="secondary" 
-          [text]="true" 
-          (onClick)="goBack()"
-          label="Sair"
-        />
-        
-        <div class="flex flex-col items-center">
-          <span class="text-xs font-bold text-primary uppercase tracking-widest mb-1">Simulado em curso</span>
-          <span class="text-lg font-bold text-surface-900 dark:text-surface-0">
-            Questão {{ currentIndex() + 1 }} <span class="text-surface-400 font-normal">/ {{ questions().length }}</span>
-          </span>
+    } @else if (questionsResource.status() === 'error' && questions().length === 0) {
+      <div class="flex flex-col items-center justify-center py-24 text-center bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-8">
+          <i class="pi pi-wifi text-4xl text-red-500"></i>
         </div>
-
-        <div class="flex gap-2">
-          <p-button
-            icon="pi pi-chevron-left"
-            severity="secondary"
-            [rounded]="true"
-            [outlined]="true"
-            [disabled]="currentIndex() === 0"
-            (onClick)="prevQuestion()"
+        <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">Falha na conexão</h3>
+        <p class="text-slate-500 dark:text-slate-400 mb-10 max-w-xs text-lg">Não foi possível carregar as questões.</p>
+        <p-button label="Tentar novamente" icon="pi pi-refresh" (onClick)="questionsResource.reload()" styleClass="rounded-xl px-8" />
+      </div>
+    } @else if (questions().length === 0) {
+      <div class="flex flex-col items-center justify-center py-24 text-center bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-8 text-slate-400">
+          <i class="pi pi-info-circle text-4xl"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Nenhuma questão encontrada</h3>
+        <p class="text-slate-500 mt-2 mb-10">Não há questões disponíveis para este critério.</p>
+        <p-button label="Voltar" icon="pi pi-arrow-left" (onClick)="goBack()" severity="secondary" styleClass="rounded-xl px-6" />
+      </div>
+    } @else {
+      <div class="flex flex-col gap-6">
+        <!-- Header Compacto -->
+        <div class="flex items-center justify-between bg-white/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-4 z-40 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm">
+          <p-button 
+            icon="pi pi-arrow-left" 
+            severity="secondary" 
+            [text]="true" 
+            (onClick)="goBack()"
+            label="Sair"
+            styleClass="rounded-xl font-bold"
           />
-          <p-button
-            icon="pi pi-chevron-right"
-            severity="secondary"
-            [rounded]="true"
-            [outlined]="true"
-            [disabled]="currentIndex() === questions().length - 1"
-            (onClick)="nextQuestion()"
-          />
-        </div>
-      </div>
-
-      <!-- Card da Questão -->
-      @if (currentQuestion(); as q) {
-        @let state = currentState();
-        
-        <div class="flex flex-col gap-6 p-6 sm:p-10 border border-surface-200 dark:border-surface-800 rounded-3xl bg-surface-0 dark:bg-surface-900 shadow-xl shadow-surface-950/5 relative overflow-hidden transition-all duration-300">
           
-          <!-- Indicador de Envio (Overlay) -->
-          @if (isLoading()) {
-            <div class="absolute inset-0 bg-surface-0/60 dark:bg-surface-950/60 z-50 flex flex-col items-center justify-center backdrop-blur-[1px]">
-               <p-progressSpinner styleClass="w-12 h-12" strokeWidth="4" />
-               <span class="mt-4 font-bold text-primary animate-pulse uppercase text-xs tracking-widest">Validando...</span>
+          <div class="text-center">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-0.5">
+              {{ isStudyMode() ? 'Sessão de Estudo' : 'Simulado' }}
+            </p>
+            <div class="flex items-center gap-2">
+               <span class="text-lg font-black text-primary-600 dark:text-primary-400">{{ currentIndex() + 1 }}</span>
+               <span class="text-slate-400 font-bold text-sm">/</span>
+               <span class="text-lg font-black text-slate-500">{{ questions().length }}</span>
             </div>
-          }
-
-          <div class="flex justify-start">
-            <span class="px-3 py-1 bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-300 text-xs font-bold rounded-full uppercase tracking-wider">
-              {{ areaLabels[q.area] }}
-            </span>
           </div>
 
-          <div class="text-lg sm:text-xl font-medium leading-relaxed text-surface-900 dark:text-surface-0">
-            {{ q.statement }}
+          <div class="flex gap-2">
+            <p-button icon="pi pi-chevron-left" severity="secondary" [rounded]="true" [text]="true" [disabled]="currentIndex() === 0" (onClick)="prevQuestion()" />
+            <p-button icon="pi pi-chevron-right" severity="secondary" [rounded]="true" [text]="true" [disabled]="currentIndex() === questions().length - 1" (onClick)="nextQuestion()" />
           </div>
+        </div>
 
-          <!-- Alternativas -->
-          <div class="flex flex-col gap-3 mt-4">
-            @for (alt of getAlternatives(q); track alt.key) {
-              @let isSelected = state.selectedAnswer === alt.key;
-              @let isCorrect = state.hasSubmitted && isSelected && state.result?.is_correct;
-              @let isWrong = state.hasSubmitted && isSelected && !state.result?.is_correct;
-              
-              <div
-                class="group flex items-start gap-4 p-4 rounded-2xl border-2 transition-all duration-200 select-none"
-                [ngClass]="{
-                  'cursor-pointer': !state.hasSubmitted,
-                  'pointer-events-none': state.hasSubmitted,
-                  'border-surface-100 dark:border-surface-800 bg-surface-50/50 dark:bg-surface-950/30 hover:border-primary/40': !state.hasSubmitted && !isSelected,
-                  'border-primary bg-primary/5 shadow-md shadow-primary/5': !state.hasSubmitted && isSelected,
-                  'border-green-500 bg-green-500/10 shadow-lg shadow-green-500/5': isCorrect,
-                  'border-red-500 bg-red-500/10 shadow-lg shadow-red-500/5': isWrong,
-                  'opacity-40 grayscale-[0.5] border-surface-100 dark:border-surface-800': state.hasSubmitted && !isSelected
-                }"
-                (click)="selectAnswer(alt.key)">
-                
-                <!-- Letra (A, B, C, D) -->
-                <div 
-                  class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center font-bold text-sm transition-colors duration-200"
-                  [ngClass]="{
-                    'bg-surface-200 dark:bg-surface-800 text-surface-600 dark:text-surface-400': !state.hasSubmitted && !isSelected,
-                    'group-hover:bg-primary group-hover:text-white': !state.hasSubmitted && !isSelected,
-                    'bg-primary text-white': isSelected && !state.hasSubmitted,
-                    'bg-green-500 text-white': isCorrect,
-                    'bg-red-500 text-white': isWrong
-                  }">
-                  {{ alt.key }}
-                </div>
-                
-                <span class="text-base leading-tight pt-1 text-surface-700 dark:text-surface-200">
-                  {{ alt.text }}
+        <!-- Barra de Progresso Sutil -->
+        <div class="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div class="h-full bg-primary-500 transition-all duration-500 ease-out" [style.width.%]="((currentIndex() + 1) / questions().length) * 100"></div>
+        </div>
+
+        <!-- Main Card -->
+        @if (currentQuestion(); as q) {
+          @let state = currentState();
+          
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden flex flex-col">
+            
+            <!-- Question Content -->
+            <div class="p-8 sm:p-10 space-y-8">
+              <div class="flex justify-between items-center">
+                <span class="px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-[10px] font-black rounded-lg uppercase tracking-widest">
+                  {{ areaLabels[q.area] }}
                 </span>
+                @if (isLoading()) {
+                  <i class="pi pi-spin pi-spinner text-primary"></i>
+                }
               </div>
-            }
-          </div>
 
-          <!-- Erro de Rede Localizado -->
-          @if (state.error) {
-            <div class="mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
-              <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-600 dark:text-red-400">
-                <i class="pi pi-exclamation-circle"></i>
-                <span class="text-xs font-bold uppercase tracking-wide">{{ state.error }}</span>
+              <h2 class="text-xl sm:text-2xl font-bold leading-relaxed text-slate-800 dark:text-slate-100">
+                {{ q.statement }}
+              </h2>
+
+              <!-- Alternatives -->
+              <div class="space-y-3">
+                @for (alt of getAlternatives(q); track alt.key) {
+                  @let isSelected = state.selectedAnswer === alt.key;
+                  @let isCorrect = state.hasSubmitted && isSelected && state.result?.is_correct;
+                  @let isWrong = state.hasSubmitted && isSelected && !state.result?.is_correct;
+                  @let isCorrectAlternative = state.hasSubmitted && alt.key === getCorrectAnswer(state.result);
+                  
+                  <button
+                    class="w-full text-left flex items-start gap-4 p-5 rounded-2xl border-2 transition-all duration-200 group relative"
+                    [disabled]="state.hasSubmitted"
+                    [ngClass]="{
+                      'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:border-primary-200 dark:hover:border-primary-800': !state.hasSubmitted && !isSelected,
+                      'border-primary-500 bg-primary-50/50 dark:bg-primary-900/10 shadow-sm': !state.hasSubmitted && isSelected,
+                      'border-green-500 bg-green-50 dark:bg-green-900/10': isCorrect || isCorrectAlternative,
+                      'border-red-500 bg-red-50 dark:bg-red-900/10': isWrong,
+                      'opacity-50': state.hasSubmitted && !isSelected && !isCorrectAlternative
+                    }"
+                    (click)="selectAnswer(alt.key)">
+                    
+                    <div class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center font-black text-xs transition-colors"
+                      [ngClass]="{
+                        'bg-slate-200 dark:bg-slate-700 text-slate-500': !state.hasSubmitted && !isSelected,
+                        'bg-primary-500 text-white': isSelected && !state.hasSubmitted,
+                        'bg-green-500 text-white': isCorrect || isCorrectAlternative,
+                        'bg-red-500 text-white': isWrong
+                      }">
+                      {{ alt.key }}
+                    </div>
+                    
+                    <span class="flex-1 pt-1 text-base sm:text-lg leading-snug font-medium text-slate-700 dark:text-slate-200">
+                      {{ alt.text }}
+                    </span>
+
+                    @if (isCorrect || isCorrectAlternative) {
+                      <i class="pi pi-check text-green-500 mt-2 font-bold"></i>
+                    } @else if (isWrong) {
+                      <i class="pi pi-times text-red-500 mt-2 font-bold"></i>
+                    }
+                  </button>
+                }
               </div>
-            </div>
-          }
 
-          <!-- Feedback de Resultado -->
-          @if (state.hasSubmitted) {
-            <div class="mt-4 animate-in fade-in zoom-in duration-300">
-              @if (state.result?.is_correct) {
-                <div class="p-4 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center gap-3 text-green-600 dark:text-green-400">
-                  <i class="pi pi-check-circle text-xl"></i>
-                  <span class="font-bold uppercase tracking-wide text-sm text-center flex-1">Excelente! Resposta correta</span>
+              <!-- Pre-submission Quality Selector (Only in study mode and before submit) -->
+              @if (isStudyMode() && state.selectedAnswer && !state.hasSubmitted) {
+                <div class="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Nível de Dificuldade</p>
+                  <div class="flex gap-2">
+                    @for (q of [{v:0, l:'REVISAR', c:'danger'}, {v:3, l:'DIFÍCIL', c:'warning'}, {v:4, l:'NORMAL', c:'primary'}, {v:5, l:'FÁCIL', c:'success'}]; track q.v) {
+                      <button 
+                        (click)="selectQuality(q.v)"
+                        class="flex-1 py-3 rounded-xl font-black text-[10px] transition-all border-2"
+                        [ngClass]="{
+                          'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary-400': state.selectedQuality !== q.v,
+                          'bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-500/20': state.selectedQuality === q.v
+                        }">
+                        {{ q.l }}
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Action Section -->
+              @if (state.hasSubmitted) {
+                <div class="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+                  
+                  @if (state.result?.is_correct) {
+                    <div class="flex items-center gap-4 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-4 rounded-2xl border border-green-200 dark:border-green-800/30">
+                      <i class="pi pi-check-circle text-2xl"></i>
+                      <div>
+                        <p class="font-black text-xs uppercase tracking-widest">Resposta Correta</p>
+                        <p class="text-sm">Parabéns! Seu desempenho nesta área está evoluindo.</p>
+                      </div>
+                    </div>
+
+                    <!-- Post-submission quality adjustment -->
+                    @if (isStudyMode()) {
+                      <div class="space-y-3">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Ajustar Dificuldade (Opcional)</p>
+                        <div class="flex gap-2">
+                          @for (q of [{v:0, l:'REVISAR', c:'danger'}, {v:3, l:'DIFÍCIL', c:'warning'}, {v:4, l:'NORMAL', c:'primary'}, {v:5, l:'FÁCIL', c:'success'}]; track q.v) {
+                            <button 
+                              (click)="selectQuality(q.v)"
+                              class="flex-1 py-3 rounded-xl font-black text-[10px] transition-all border-2"
+                              [ngClass]="{
+                                'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary-400': state.selectedQuality !== q.v,
+                                'bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-500/20': state.selectedQuality === q.v
+                              }">
+                              {{ q.l }}
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  } @else {
+                    <div class="flex items-center gap-4 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-4 rounded-2xl border border-red-200 dark:border-red-800/30">
+                      <i class="pi pi-info-circle text-2xl"></i>
+                      <div>
+                        <p class="font-black text-xs uppercase tracking-widest">Incorreto</p>
+                        <p class="text-sm">A alternativa correta é a <b>{{ getCorrectAnswer(state.result) }}</b>.</p>
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Stats -->
+                  @if (isStudyMode() && sm2Progress(); as p) {
+                    <div class="flex justify-between items-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+                      <div class="text-center flex-1 border-r border-slate-200 dark:border-slate-700">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Acerto</p>
+                        <p class="font-black text-primary-600">{{ (p.success_rate * 100).toFixed(0) }}%</p>
+                      </div>
+                      <div class="text-center flex-1 border-r border-slate-200 dark:border-slate-700">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Repetições</p>
+                        <p class="font-black text-slate-700 dark:text-slate-300">{{ p.correct_count + p.wrong_count }}</p>
+                      </div>
+                      <div class="text-center flex-1">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Revisão</p>
+                        <p class="font-black text-slate-700 dark:text-slate-300">{{ p.next_review_date ? (p.next_review_date | date:'dd/MM') : '--' }}</p>
+                      </div>
+                    </div>
+                  }
+
+                  <p-button
+                    [label]="currentIndex() === questions().length - 1 ? 'Finalizar' : 'Próxima Questão'"
+                    severity="primary"
+                    styleClass="w-full h-14 text-lg font-black rounded-xl shadow-lg shadow-primary-500/20"
+                    (onClick)="nextQuestion()"
+                  />
                 </div>
               } @else {
-                <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400">
-                  <i class="pi pi-times-circle text-xl"></i>
-                  <span class="font-bold uppercase tracking-wide text-sm text-center flex-1">Resposta incorreta. Continue estudando!</span>
+                <div class="pt-4">
+                  <p-button
+                    label="Confirmar Resposta"
+                    [disabled]="!state.selectedAnswer || isLoading()"
+                    [loading]="isLoading()"
+                    styleClass="w-full h-14 text-lg font-black rounded-xl shadow-lg shadow-primary-500/20"
+                    (onClick)="confirmAnswer()"
+                  />
                 </div>
               }
             </div>
-          }
-
-          <!-- Botão de Ação -->
-          <div class="mt-6">
-            <p-button
-              [label]="state.hasSubmitted ? 'Próxima Questão' : 'Validar Resposta'"
-              [disabled]="state.selectedAnswer === '' || isLoading()"
-              [loading]="isLoading()"
-              [severity]="state.hasSubmitted ? 'secondary' : 'primary'"
-              [rounded]="true"
-              styleClass="w-full h-14 text-lg font-bold transition-all"
-              (onClick)="state.hasSubmitted ? nextQuestion() : confirmAnswer()"
-            />
           </div>
-        </div>
+        }
 
-        <!-- Navegação Inferior -->
-        <div class="flex flex-wrap gap-2 mt-8 justify-center">
+        <!-- Mini Navegação -->
+        <div class="flex flex-wrap gap-2 justify-center pb-8">
           @for (item of questions(); track item.id; let i = $index) {
-            @let qState = states().get(item.id);
+            @let s = states().get(item.id);
             <button
-              class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-200 border-2"
+              class="w-8 h-8 rounded-lg text-[10px] font-black transition-all border"
               [ngClass]="{
-                'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20': currentIndex() === i,
-                'bg-surface-0 dark:bg-surface-900 border-surface-200 dark:border-surface-800 text-surface-400': currentIndex() !== i && !qState?.hasSubmitted,
-                'bg-green-500 border-green-500 text-white': currentIndex() !== i && qState?.hasSubmitted && qState?.result?.is_correct,
-                'bg-red-500 border-red-500 text-white': currentIndex() !== i && qState?.hasSubmitted && !qState?.result?.is_correct
+                'border-primary-500 bg-primary-500 text-white scale-110': currentIndex() === i,
+                'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400': currentIndex() !== i && !s?.hasSubmitted,
+                'border-green-500 bg-green-500 text-white': currentIndex() !== i && s?.hasSubmitted && s?.result?.is_correct,
+                'border-red-500 bg-red-500 text-white': currentIndex() !== i && s?.hasSubmitted && !s?.result?.is_correct
               }"
               (click)="jumpTo(i)">
               {{ i + 1 }}
             </button>
           }
         </div>
-      }
-    </div>
-  }
+      </div>
+    }
+  </div>
 </div>
