@@ -58,7 +58,8 @@ async def list_progress(
         "- `3`: **HARD** - Acertou com dificuldade.\n"
         "- `4`: **GOOD** - Acertou com esforço normal.\n"
         "- `5`: **EASY** - Acertou com facilidade.\n\n"
-        "**Importante:** Se o usuário errar a questão, deve-se enviar `quality: 0`."
+        "**Importante:** O sistema valida a resposta (`response`). Se o usuário errar a questão, "
+        "o algoritmo forçará automaticamente a qualidade para `0` (AGAIN), ignorando o valor enviado."
     ),
     response_model=SubmitAreaReviewResponse,
     status_code=status.HTTP_200_OK,

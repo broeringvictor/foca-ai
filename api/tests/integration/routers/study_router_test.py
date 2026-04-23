@@ -1,8 +1,7 @@
 import pytest
-from uuid import UUID, uuid8
+from uuid import uuid8
 from app.api.dependecies.auth import get_current_user_id
 from app.domain.enums.law_area import LawArea
-from app.domain.enums.answer_quality import AnswerQuality
 from app.domain.enums.alternatives import Alternative
 from app.infrastructure.session import get_session
 from main import app
@@ -60,26 +59,29 @@ async def test_submit_area_review_through_question(client, auth_user, session_ov
     assert body["is_correct"] is True
     assert body["new_progress"]["card_status"] == 2
 
-
 @pytest.mark.asyncio
 async def test_submit_wrong_answer_review(client, auth_user, session_override):
     question_model = QuestionFactory.create(area=LawArea.TAX, correct=Alternative.B)
     session_override.add(question_model)
     await session_override.commit()
     await session_override.refresh(question_model)
-    
+
     payload = {
         "question_id": str(question_model.id),
         "response": "A", # Errada
-        "quality": 0 # AGAIN
+        "quality": 5 # EASY (Sistema deve ignorar e forçar AGAIN/0)
     }
-    
+
     response = client.post("/api/v1/study/review", json=payload)
-    
+
     assert response.status_code == 200
     body = response.json()
     assert body["is_correct"] is False
-    assert body["new_progress"]["card_status"] == 1
+    assert body["correct_alternative"] == "B"
+    # Mesmo enviando qualidade 5, o status deve ser 1 (LEARNING) e intervalo 1
+    assert body["new_progress"]["card_status"] == 1 
+    assert body["new_progress"]["interval_days"] == 1
+
 
 
 @pytest.mark.asyncio
