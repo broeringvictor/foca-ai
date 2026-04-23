@@ -23,7 +23,13 @@ def session_override(session):
     app.dependency_overrides.pop(get_session, None)
 
 
-def test_list_study_progress(client, auth_user):
+@pytest.mark.asyncio
+async def test_list_study_progress(client, auth_user, session_override):
+    # Criar uma questão para garantir que venha na lista
+    question_model = QuestionFactory.create(area=LawArea.CIVIL)
+    session_override.add(question_model)
+    await session_override.commit()
+
     response = client.get("/api/v1/study/progress")
     
     assert response.status_code == 200
@@ -31,9 +37,10 @@ def test_list_study_progress(client, auth_user):
     assert "items" in body
     assert len(body["items"]) == len(LawArea)
     
-    for item in body["items"]:
-        assert "area" in item
-        assert item["progress"] is None
+    # Verificar se a área Civil tem a questão
+    civil_item = next(item for item in body["items"] if item["area"] == LawArea.CIVIL.value)
+    assert len(civil_item["questions"]) > 0
+    assert civil_item["questions"][0]["id"] == str(question_model.id)
 
 
 @pytest.mark.asyncio

@@ -5,9 +5,12 @@ from app.domain.enums.answer_quality import AnswerQuality
 from app.domain.enums.alternatives import Alternative
 from app.domain.value_objects.sm2_progress import Sm2Progress
 
+from app.application.dto.question.get_dto import QuestionListItem
+
 class StudyAreaProgressDTO(BaseModel):
     area: LawArea
     progress: Sm2Progress | None
+    questions: list[QuestionListItem] = Field(default_factory=list)
 
 class ListStudyProgressResponse(BaseModel):
     items: list[StudyAreaProgressDTO]

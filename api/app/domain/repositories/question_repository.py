@@ -2,6 +2,7 @@ from typing import Protocol
 from uuid import UUID
 
 from app.domain.entities.question import Question
+from app.domain.enums.law_area import LawArea
 
 
 class IQuestionRepository(Protocol):
@@ -12,6 +13,9 @@ class IQuestionRepository(Protocol):
     async def find_by_id(self, question_id: UUID) -> Question | None: ...
     async def find_by_ids(self, question_ids: list[UUID]) -> list[Question]: ...
     async def find_all_by_exam_id(self, exam_id: UUID) -> list[Question]: ...
+    async def find_by_area(
+        self, area: LawArea, limit: int = 5
+    ) -> list[Question]: ...
     async def find_one_by_exam_id_at_index(
         self, exam_id: UUID, index: int
     ) -> Question | None: ...

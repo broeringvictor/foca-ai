@@ -89,6 +89,16 @@ class QuestionRepository:
         result = await self._session.execute(stmt)
         return [self._to_entity(m) for m in result.scalars().all()]
 
+    async def find_by_area(self, area: LawArea, limit: int = 5) -> list[Question]:
+        stmt = (
+            select(QuestionModel)
+            .options(_COLS_WITHOUT_EMBEDDING)
+            .where(QuestionModel.area == area.value)
+            .limit(limit)
+        )
+        result = await self._session.execute(stmt)
+        return [self._to_entity(m) for m in result.scalars().all()]
+
     async def find_one_by_exam_id_at_index(
         self, exam_id: UUID, index: int
     ) -> Question | None:
