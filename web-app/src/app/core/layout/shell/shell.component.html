@@ -1,0 +1,30 @@
+<div class="flex flex-col h-screen overflow-hidden bg-surface-50 dark:bg-surface-0">
+
+  <!-- Full-width topbar -->
+  <app-topbar />
+
+  <!-- Sidebar + Content row (fills remaining height) -->
+  <div class="flex flex-1 min-h-0 bg-surface-0 dark:bg-surface-0">
+    <app-sidebar />
+
+    <!-- Content: rounded-tl-2xl creates the curve connecting topbar → sidebar -->
+    <main class="flex-1 overflow-y-auto p-4 mt-3 ml-3 bg-surface-50 dark:bg-surface-50 rounded-tl-[3rem] border border-surface-200/50 dark:border-white/5 shadow-[0_12px_30px_rgba(15,23,42,0.08)] dark:shadow-[0_12px_30px_rgba(0,0,0,0.35)]">
+      <router-outlet />
+    </main>
+  </div>
+
+</div>
+
+<!-- Mobile drawer -->
+<p-drawer
+  [visible]="layout.drawerOpen()"
+  position="left"
+  styleClass="p-0 w-64"
+  [modal]="true"
+  [showCloseIcon]="false"
+  (onHide)="onDrawerHide()"
+>
+  <ng-template #headless>
+    <app-nav-menu [closeOnNavigate]="true" />
+  </ng-template>
+</p-drawer>

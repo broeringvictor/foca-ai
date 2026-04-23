@@ -1,0 +1,50 @@
+<header class="w-full bg-surface-0 dark:bg-surface-0">
+  <div class="h-16 px-4 flex items-center justify-between gap-4">
+
+    <!-- Hamburger (mobile only) -->
+    <button
+      #hamburgerBtn
+      class="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg text-secondary-600 dark:text-secondary-300 hover:bg-secondary-100 dark:hover:bg-secondary-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1]"
+      [attr.aria-expanded]="layout.drawerOpen()"
+      aria-label="Abrir navegação"
+      (click)="layout.toggleDrawer()"
+    >
+      <i class="pi pi-bars text-lg"></i>
+    </button>
+
+    <!-- Brand -->
+    <a routerLink="/" class="flex items-center gap-2 cursor-pointer">
+      <span class="text-2xl font-black tracking-tighter text-secondary-700 dark:text-secondary-200">
+        FOCA<span class="text-primary">NOTES</span>
+      </span>
+    </a>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3 ml-auto">
+      <p-button
+        label="Nova Anotação"
+        icon="pi pi-plus"
+        severity="primary"
+        [rounded]="true"
+        size="small"
+        class="hidden sm:block"
+        styleClass="px-5 font-bold shadow-lg shadow-primary/10"
+      />
+
+      <div class="h-6 w-px bg-secondary-200 dark:bg-secondary-800 hidden sm:block"></div>
+
+      <p-button
+        [label]="isDark() ? 'Claro' : 'Escuro'"
+        [icon]="isDark() ? 'pi pi-sun' : 'pi pi-moon'"
+        [severity]="isDark() ? 'warn' : 'secondary'"
+        [text]="true"
+        [rounded]="true"
+        (onClick)="toggleDarkMode()"
+        pTooltip="Alternar Tema"
+        tooltipPosition="bottom"
+        styleClass="px-4 h-10 transition-colors duration-300"
+      />
+    </div>
+
+  </div>
+</header>

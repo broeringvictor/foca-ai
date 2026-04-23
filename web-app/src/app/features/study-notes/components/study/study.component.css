@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  color: var(--p-surface-800);
+}
+
+:host ::ng-deep .p-card {
+  background: var(--p-surface-0);
+  border: 1px solid var(--p-surface-200);
+  border-radius: 1.5rem;
+  overflow: hidden;
+}
+
+:host ::ng-deep .p-card .p-card-header {
+  border: 0;
+  padding: 0;
+}
+
+:host ::ng-deep .p-card .p-card-body {
+  padding: 0;
+}
+
+:host ::ng-deep .p-progressbar {
+  background-color: var(--p-surface-100);
+}
+
+:host ::ng-deep .p-progressbar .p-progressbar-value {
+  background: linear-gradient(90deg, var(--p-primary-500), var(--p-primary-600));
+}
+
+:host ::ng-deep .p-button {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+:host ::ng-deep .p-button:hover {
+  transform: translateY(-1px);
+}
+
+:host ::ng-deep .p-tag {
+  border-radius: 9999px;
+  font-weight: 700;
+}
