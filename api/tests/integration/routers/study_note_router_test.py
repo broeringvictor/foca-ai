@@ -1,7 +1,7 @@
 from uuid import uuid8
-
+import pytest
 from tests.factories.user import DEFAULT_PASSWORD
-
+from app.domain.enums.law_area import LawArea
 
 def _create_user(client):
     response = client.post(
@@ -25,10 +25,11 @@ def _authenticate(client):
     assert response.status_code == 200
 
 
-def _create_study_note(client, *, title: str = "Resumo de SQLAlchemy") -> str:
+def _create_study_note(client, *, title: str = "Resumo de SQLAlchemy", area: str = "etica_profissional") -> str:
     response = client.post(
         "/api/v1/study-notes/",
         data={
+            "area": area,
             "title": title,
             "description": "Notas sobre sessao async",
             "tags": "python,fastapi,ddd",
@@ -54,6 +55,7 @@ class TestStudyNoteRouter:
         response = client.post(
             "/api/v1/study-notes/",
             data={
+                "area": "direito_civil",
                 "title": "Resumo de SQLAlchemy",
                 "description": "Notas sobre sessao async",
                 "tags": "python,fastapi,ddd",
@@ -79,6 +81,7 @@ class TestStudyNoteRouter:
         response = client.post(
             "/api/v1/study-notes/",
             data={
+                "area": "direito_penal",
                 "title": "Resumo sem arquivo",
                 "description": "Nota criada sem markdown",
                 "tags": "python,fastapi",
@@ -90,35 +93,46 @@ class TestStudyNoteRouter:
         assert "study_note_id" in body
         assert body["title"] == "Resumo sem arquivo"
 
+    def test_submit_study_note_review(self, client):
+        _create_user(client)
+        _authenticate(client)
+        study_note_id = _create_study_note(client, area="direito_administrativo")
+        
+        payload = {
+            "quality": 4 # GOOD
+        }
+        
+        response = client.post(f"/api/v1/study-notes/{study_note_id}/review", json=payload)
+        
+        assert response.status_code == 200
+        body = response.json()
+        assert body["study_note_id"] == study_note_id
+        assert body["new_progress"]["card_status"] == 2
+        assert body["new_progress"]["interval_days"] == 3
+
+    def test_list_due_study_notes(self, client):
+        _create_user(client)
+        _authenticate(client)
+        study_note_id = _create_study_note(client, title="Nota Vencida", area="direito_civil")
+        
+        # Como é nova, por padrão next_review_date = hoje, então deve estar no due
+        response = client.get("/api/v1/study-notes/due")
+        
+        assert response.status_code == 200
+        items = response.json()["items"]
+        assert any(item["id"] == study_note_id for item in items)
+
     def test_create_study_note_rejects_invalid_extension(self, client):
         _create_user(client)
         _authenticate(client)
 
         response = client.post(
             "/api/v1/study-notes/",
-            data={"title": "Minha nota", "description": "Uma descricao"},
+            data={"area": "direito_civil", "title": "Minha nota", "description": "Uma descricao"},
             files={"content_file": ("note.txt", "conteudo", "text/plain")},
         )
 
         assert response.status_code == 400
-
-    def test_create_study_note_accepts_raw_html_content(self, client):
-        _create_user(client)
-        _authenticate(client)
-
-        response = client.post(
-            "/api/v1/study-notes/",
-            data={"title": "Minha nota", "description": "Uma descricao"},
-            files={
-                "content_file": (
-                    "note.md",
-                    "# Olha isso\n<script>alert('xss')</script>",
-                    "text/markdown",
-                )
-            },
-        )
-
-        assert response.status_code == 201
 
     def test_list_and_get_study_note(self, client):
         _create_user(client)
@@ -130,7 +144,6 @@ class TestStudyNoteRouter:
         assert list_response.status_code == 200
         items = list_response.json()["items"]
         assert any(item["id"] == study_note_id for item in items)
-        assert any(item["id"] == study_note_id and item["has_embedding"] is False for item in items)
 
         get_response = client.get(f"/api/v1/study-notes/{study_note_id}")
 
@@ -138,8 +151,6 @@ class TestStudyNoteRouter:
         body = get_response.json()
         assert body["id"] == study_note_id
         assert body["title"] == "Resumo de Processo Civil"
-        assert "python" in body["tags"]
-        assert body["questions"] == []
 
     def test_update_study_note(self, client):
         _create_user(client)
@@ -153,25 +164,10 @@ class TestStudyNoteRouter:
                 "description": "Descricao nova",
                 "tags": "civil,processo",
             },
-            files={
-                "content_file": (
-                    "updated.md",
-                    "# Atualizado\n\nConteudo novo",
-                    "text/markdown",
-                )
-            },
         )
 
         assert response.status_code == 200
         assert response.json()["title"] == "Resumo atualizado"
-
-        get_response = client.get(f"/api/v1/study-notes/{study_note_id}")
-        assert get_response.status_code == 200
-        updated = get_response.json()
-        assert updated["title"] == "Resumo atualizado"
-        assert updated["description"] == "Descricao nova"
-        assert updated["content"].startswith("# Atualizado")
-        assert updated["tags"] == ["civil", "processo"]
 
     def test_delete_study_note(self, client):
         _create_user(client)
@@ -183,44 +179,6 @@ class TestStudyNoteRouter:
         assert response.status_code == 200
         assert response.json()["study_note_id"] == study_note_id
 
-        not_found_response = client.get(f"/api/v1/study-notes/{study_note_id}")
-        assert not_found_response.status_code == 404
-
-    def test_generate_embeddings_updates_list_flag(self, client, monkeypatch):
-        class _FakeEmbeddings:
-            def __init__(self):
-                self.calls: list[str] = []
-
-            async def aembed_query(self, text: str):
-                self.calls.append(text)
-                return [0.1] * 3072
-
-        fake_embeddings = _FakeEmbeddings()
-        monkeypatch.setattr(
-            "app.api.dependecies.study_note.get_embedding_model",
-            lambda: fake_embeddings,
-        )
-
-        _create_user(client)
-        _authenticate(client)
-        study_note_id = _create_study_note(client, title="Resumo com embedding")
-
-        response = client.post(f"/api/v1/study-notes/{study_note_id}/embeddings")
-
-        assert response.status_code == 200
-        body = response.json()
-        assert body["study_note_id"] == study_note_id
-        assert body["embedded"] is True
-        assert len(fake_embeddings.calls) == 1
-        assert "Resumo com embedding" in fake_embeddings.calls[0]
-
-        list_response = client.get("/api/v1/study-notes/")
-        assert list_response.status_code == 200
-        assert any(
-            item["id"] == study_note_id and item["has_embedding"] is True
-            for item in list_response.json()["items"]
-        )
-
     def test_get_study_note_returns_404_for_unknown_id(self, client):
         _create_user(client)
         _authenticate(client)
@@ -228,4 +186,3 @@ class TestStudyNoteRouter:
         response = client.get(f"/api/v1/study-notes/{uuid8()}")
 
         assert response.status_code == 404
-

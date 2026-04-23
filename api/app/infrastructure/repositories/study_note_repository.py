@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from sqlalchemy import select, cast, Date
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.study_note import StudyNote
@@ -86,18 +86,16 @@ class StudyNoteRepository:
     async def find_due_by_user_id(self, user_id: UUID) -> list[StudyNote]:
         today = datetime.now(timezone.utc).date()
         
-        # Filtra por user_id e next_review_date <= hoje
+        # Filtra por user_id no banco e depois filtra por data no python (mais compatível entre postgres e sqlite)
         stmt = (
             select(StudyNoteModel)
-            .where(
-                StudyNoteModel.user_id == user_id,
-                cast(StudyNoteModel.review_progress["next_review_date"].astext, Date) <= today
-            )
+            .where(StudyNoteModel.user_id == user_id)
         )
         
         result = await self._session.execute(stmt)
         models = result.scalars().all()
-        return [self._to_entity(m) for m in models]
+        entities = [self._to_entity(m) for m in models]
+        return [e for e in entities if e.review_progress.next_review_date <= today]
 
     async def find_summaries_by_user_id(self, user_id: UUID) -> list[tuple[UUID, str, bool]]:
         notes = await self.find_all_by_user_id(user_id)

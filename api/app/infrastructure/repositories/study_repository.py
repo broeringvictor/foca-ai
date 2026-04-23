@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from sqlalchemy import select, cast, Date
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.study import Study
@@ -42,13 +42,12 @@ class StudyRepository:
 
     async def find_due_by_user_id(self, user_id: UUID) -> list[Study]:
         today = datetime.now(timezone.utc).date()
-        stmt = select(StudyModel).where(
-            StudyModel.user_id == user_id,
-            cast(StudyModel.review_progress["next_review_date"].astext, Date) <= today
-        )
+        stmt = select(StudyModel).where(StudyModel.user_id == user_id)
         result = await self._session.execute(stmt)
         models = result.scalars().all()
-        return [self._to_entity(m) for m in models]
+        
+        entities = [self._to_entity(m) for m in models]
+        return [e for e in entities if e.review_progress.next_review_date <= today]
 
     @staticmethod
     def _to_entity(model: StudyModel) -> Study:
