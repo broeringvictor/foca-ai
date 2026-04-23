@@ -141,6 +141,7 @@ class QuestionCategorizationService(IQuestionCategorizationService):
                 assignments[item.question_number] = ClassifiedQuestion(
                     number=item.question_number,
                     area=item.area,
+                    formatted_statement=getattr(item, 'formatted_statement', None),
                     confidence=item.confidence,
                     source="initial",
                     tags=getattr(item, 'tags', []),
@@ -224,9 +225,15 @@ class QuestionCategorizationService(IQuestionCategorizationService):
             for item in getattr(batch_result, 'results', []):
                 if item.question_number not in by_number:
                     continue
+                
+                # Preserva o enunciado formatado se já existir e o novo não vier (ou se for o mesmo)
+                existing = assignments.get(item.question_number)
+                new_formatted = getattr(item, 'formatted_statement', None) or (existing.formatted_statement if existing else None)
+
                 assignments[item.question_number] = ClassifiedQuestion(
                     number=item.question_number,
                     area=item.area,
+                    formatted_statement=new_formatted,
                     confidence=item.confidence,
                     source="review",
                     tags=getattr(item, 'tags', []),
@@ -293,17 +300,19 @@ class QuestionCategorizationService(IQuestionCategorizationService):
                 confidence = 0.0
                 source = "unclassified"
                 tags = []
+                statement = raw.statement
             else:
                 area = data.area
                 confidence = data.confidence
                 source = data.source
                 tags = data.tags
+                statement = data.formatted_statement or raw.statement
 
             result.append(
                 Question.create(
                     exam_id=exam_id,
                     number=raw.number,
-                    statement=raw.statement[:1500],
+                    statement=statement[:2000],
                     area=area,
                     correct=Alternative.A,
                     alternative_a=raw.alternative_a[:1000],

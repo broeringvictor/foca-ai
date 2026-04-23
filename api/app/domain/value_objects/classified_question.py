@@ -10,6 +10,7 @@ class ClassifiedQuestion(BaseModel):
 
     number: int = Field(..., gt=0)
     area: LawArea
+    formatted_statement: str | None = None
     confidence: float = Field(..., ge=0.0, le=1.0)
     source: str = Field(default="initial", max_length=40)
     tags: list[str] = Field(default_factory=list)

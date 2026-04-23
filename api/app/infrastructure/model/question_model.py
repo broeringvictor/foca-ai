@@ -25,7 +25,7 @@ class QuestionModel:
         ForeignKey("exam.id", ondelete="CASCADE"),
         nullable=False,
     )
-    statement: Mapped[str] = mapped_column(String(1500), nullable=False)
+    statement: Mapped[str] = mapped_column(String(2000), nullable=False)
     area: Mapped[str] = mapped_column(String(40), nullable=False)
     correct: Mapped[str] = mapped_column(String(1), nullable=False)
     alternative_a: Mapped[str] = mapped_column(String(1000), nullable=False)

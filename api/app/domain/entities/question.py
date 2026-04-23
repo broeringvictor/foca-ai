@@ -25,7 +25,7 @@ class Question(Entity):
 
     exam_id: UUID8
     number: int = Field(..., gt=0)
-    statement: str = Field(..., min_length=4, max_length=1500)
+    statement: str = Field(..., min_length=4, max_length=2000)
     area: LawArea
     correct: Alternative
     alternative_a: str = Field(..., min_length=1, max_length=1000)

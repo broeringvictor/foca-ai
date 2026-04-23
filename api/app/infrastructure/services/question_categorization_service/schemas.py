@@ -12,6 +12,13 @@ class ClassificationResult(BaseModel):
     area: LawArea = Field(
         ..., description="Area juridica principal da questao (enum LawArea)."
     )
+    formatted_statement: str = Field(
+        ...,
+        description="O enunciado da questão formatado para melhor leitura. "
+        "Você DEVE separar o texto em parágrafos usando '\\n\\n' onde houver mudanças de contexto, "
+        "narrativa de fatos ou antes do comando da questão (ex: 'Assinale a opção...'). "
+        "NÃO altere as palavras originais, apenas adicione as quebras de linha."
+    )
     confidence: float = Field(
         ...,
         ge=0.0,

@@ -17,16 +17,22 @@ REGRAS CRÍTICAS:
 2. confidence reflete certeza: 0.9+ área clara; 0.6-0.8 ambiguidade leve; <0.5 chute.
 3. reasoning: 1 frase curta (max 200 caracteres) apontando a pista decisiva.
 4. Questão que menciona leis materiais (ex: CLT) mas foca no direito da parte (ex: "a quais verbas o empregado tem direito") NÃO é área processual. Códigos/leis materiais ou materiais processuais só indicam processual se o foco for rito ("prazo processual da CLT", etc).
+
+FORMATAÇÃO DO ENUNCIADO (formatted_statement):
+- O texto original vem de um PDF sem quebras de linha (bloco único).
+- Você DEVE reformatar o enunciado para melhorar a legibilidade usando '\\n\\n' para separar parágrafos.
+- Separe a narrativa de fatos, as fundamentações jurídicas e o comando final da questão (ex: "Assinale a opção correta").
+- NÃO altere nenhuma palavra do texto original. Apenas adicione as quebras de linha.
 """
 
 CLASSIFY_EXAMPLES = [
     {
         "input": "Classifique: [{\"number\": 1, \"statement\": \"Mário ajuizou reclamação trabalhista contra X pleiteando horas extras. Em audiência, a empresa apresentou contestação alegando prescrição. O juiz deve...\"}]",
-        "output": '{"results":[{"question_number":1,"area":"direito_processual_do_trabalho","confidence":0.92,"reasoning":"Foco no rito trabalhista (reclamação, contestação, decisão do juiz)."}]}'
+        "output": '{"results":[{"question_number":1,"area":"direito_processual_do_trabalho","formatted_statement":"Mário ajuizou reclamação trabalhista contra X pleiteando horas extras.\\n\\nEm audiência, a empresa apresentou contestação alegando prescrição.\\n\\nO juiz deve...","confidence":0.92,"reasoning":"Foco no rito trabalhista (reclamação, contestação, decisão do juiz)."}]}'
     },
     {
         "input": "Classifique: [{\"number\": 2, \"statement\": \"João, empregado da empresa X regido pela CLT, foi demitido sem justa causa. A quais verbas rescisórias ele tem direito?\"}]",
-        "output": '{"results":[{"question_number":2,"area":"direito_do_trabalho","confidence":0.90,"reasoning":"Questão sobre direito material do trabalho (verbas rescisórias), mera menção à CLT."}]}'
+        "output": '{"results":[{"question_number":2,"area":"direito_do_trabalho","formatted_statement":"João, empregado da empresa X regido pela CLT, foi demitido sem justa causa.\\n\\nA quais verbas rescisórias ele tem direito?","confidence":0.90,"reasoning":"Questão sobre direito material do trabalho (verbas rescisórias), mera menção à CLT."}]}'
     },
     {
         "input": "Classifique: [{\"number\": 3, \"statement\": \"No cumprimento de sentença de obrigação de pagar quantia certa, o prazo para o executado apresentar impugnação é de...\"}]",
