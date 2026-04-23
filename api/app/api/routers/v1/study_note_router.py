@@ -11,11 +11,14 @@ from app.api.dependecies.study_note import (
     get_find_related_study_notes_to_note_dependency,
     get_generate_embedding_dependency,
     get_get_study_note_dependency,
+    get_list_due_study_notes_dependency,
     get_list_study_notes_dependency,
     get_study_note_question_list_dependency,
+    get_submit_review_dependency,
     get_update_study_note_dependency,
 )
 from app.api.errors.schemas import ErrorResponse
+from app.domain.enums.law_area import LawArea
 from app.application.dto.question.get_dto import GetQuestionsListResponse
 from app.application.dto.question.related_dto import FindRelatedQuestionsToNoteResponse
 from app.application.dto.study_note.create_dto import (
@@ -27,6 +30,7 @@ from app.application.dto.study_note.embedding_dto import GenerateEmbeddingRespon
 from app.application.dto.study_note.get_dto import GetStudyNoteResponse
 from app.application.dto.study_note.list_dto import ListStudyNotesResponse
 from app.application.dto.study_note.related_dto import FindRelatedStudyNotesToNoteResponse
+from app.application.dto.study_note.review_dto import SubmitReviewDTO, SubmitReviewResponse
 from app.application.dto.study_note.update_dto import UpdateStudyNoteDTO, UpdateStudyNoteResponse
 from app.application.use_cases.study_note.create import CreateStudyNote
 from app.application.use_cases.study_note.delete import DeleteStudyNote
@@ -40,6 +44,8 @@ from app.application.use_cases.study_note.find_related_to_note import (
     FindRelatedStudyNotesToNote,
 )
 from app.application.use_cases.study_note.list import ListStudyNotes
+from app.application.use_cases.study_note.list_due import ListDueStudyNotes
+from app.application.use_cases.study_note.submit_review import SubmitReview
 from app.application.use_cases.study_note.update import UpdateStudyNote
 
 router = APIRouter(
@@ -59,6 +65,20 @@ router = APIRouter(
 async def list_study_notes(
     user_id: UUID = Depends(get_current_user_id),
     use_case: ListStudyNotes = Depends(get_list_study_notes_dependency),
+) -> ListStudyNotesResponse:
+    return await use_case.execute(user_id)
+
+
+@router.get(
+    "/due",
+    summary="list due",
+    description="Lista as notas de estudo do usuário autenticado que estão vencidas para revisão (SM-2).",
+    response_model=ListStudyNotesResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def list_due_study_notes(
+    user_id: UUID = Depends(get_current_user_id),
+    use_case: ListDueStudyNotes = Depends(get_list_due_study_notes_dependency),
 ) -> ListStudyNotesResponse:
     return await use_case.execute(user_id)
 
@@ -97,6 +117,7 @@ async def get_study_note(
     },
 )
 async def create_study_note(
+    area: LawArea = Form(...),
     title: str = Form(...),
     description: str | None = Form(None),
     tags: list[str] = Depends(parse_tags),
@@ -106,6 +127,7 @@ async def create_study_note(
 ) -> CreateStudyNoteResponse:
     dto = CreateStudyNoteDTO(
         user_id=user_id,
+        area=area,
         title=title,
         description=description,
         content=markdown_content,
@@ -249,3 +271,21 @@ async def get_question_list(
     use_case: GetStudyNoteQuestionList = Depends(get_study_note_question_list_dependency),
 ) -> GetQuestionsListResponse:
     return await use_case.execute(study_note_id)
+
+@router.post(
+    "/{study_note_id}/review",
+    summary="submit review",
+    description="Submete uma revisão para a nota de estudo, atualizando seu progresso SM-2.",
+    response_model=SubmitReviewResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        404: {"model": ErrorResponse, "description": "Nota não encontrada"},
+    },
+)
+async def submit_review(
+    study_note_id: UUID,
+    dto: SubmitReviewDTO,
+    user_id: UUID = Depends(get_current_user_id),
+    use_case: SubmitReview = Depends(get_submit_review_dependency),
+) -> SubmitReviewResponse:
+    return await use_case.execute(study_note_id, user_id, dto)

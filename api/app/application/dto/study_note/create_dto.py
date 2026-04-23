@@ -2,10 +2,14 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, UUID8
 
 
+from app.domain.enums.law_area import LawArea
+
+
 class CreateStudyNoteDTO(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     user_id: UUID8 = Field(..., examples=["01965354-a47f-816a-a4ce-f4fa7f87f617"])
+    area: LawArea = Field(..., examples=["direito_civil"])
     title: str = Field(
         ...,
         min_length=4,

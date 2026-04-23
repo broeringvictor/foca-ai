@@ -16,6 +16,8 @@ from app.application.use_cases.study_note.generate_embedding import GenerateStud
 from app.application.use_cases.study_note.get import GetStudyNote
 from app.application.use_cases.study_note.get_question_list import GetStudyNoteQuestionList
 from app.application.use_cases.study_note.list import ListStudyNotes
+from app.application.use_cases.study_note.list_due import ListDueStudyNotes
+from app.application.use_cases.study_note.submit_review import SubmitReview
 from app.application.use_cases.study_note.update import UpdateStudyNote
 from app.infrastructure.embedding import get_embedding_model
 from app.infrastructure.repositories.question_repository import QuestionRepository
@@ -95,3 +97,14 @@ def get_generate_embedding_dependency(
         repository=StudyNoteRepository(session),
         embeddings=get_embedding_model(),
     )
+
+def get_list_due_study_notes_dependency(
+    session: AsyncSession = Depends(get_session),
+) -> ListDueStudyNotes:
+    return ListDueStudyNotes(repository=StudyNoteRepository(session))
+
+
+def get_submit_review_dependency(
+    session: AsyncSession = Depends(get_session),
+) -> SubmitReview:
+    return SubmitReview(repository=StudyNoteRepository(session))

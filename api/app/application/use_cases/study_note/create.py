@@ -13,6 +13,7 @@ class CreateStudyNote:
     async def execute(self, input_data: CreateStudyNoteDTO) -> CreateStudyNoteResponse:
         study_note = StudyNote.create(
             user_id=input_data.user_id,
+            area=input_data.area,
             title=input_data.title,
             description=input_data.description,
             content=input_data.content,

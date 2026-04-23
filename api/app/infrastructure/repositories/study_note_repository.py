@@ -1,9 +1,12 @@
+from datetime import datetime, timezone
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, cast, Date
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.study_note import StudyNote
+from app.domain.enums.law_area import LawArea
+from app.domain.value_objects.sm2_progress import Sm2Progress
 from app.infrastructure.model.study_note_model import StudyNoteModel
 
 
@@ -45,6 +48,7 @@ class StudyNoteRepository:
         model.tags = list(study_note.tags)
         model.embedding = study_note.embedding
         model.questions = [str(qid) for qid in study_note.questions]
+        model.review_progress = study_note.review_progress.model_dump(mode='json')
         model.updated_at = study_note.updated_at
 
     async def update_embedding(self, study_note_id: UUID, embedding: list[float]) -> None:
@@ -75,6 +79,22 @@ class StudyNoteRepository:
             .where(StudyNoteModel.user_id == user_id)
         )
 
+        result = await self._session.execute(stmt)
+        models = result.scalars().all()
+        return [self._to_entity(m) for m in models]
+
+    async def find_due_by_user_id(self, user_id: UUID) -> list[StudyNote]:
+        today = datetime.now(timezone.utc).date()
+        
+        # Filtra por user_id e next_review_date <= hoje
+        stmt = (
+            select(StudyNoteModel)
+            .where(
+                StudyNoteModel.user_id == user_id,
+                cast(StudyNoteModel.review_progress["next_review_date"].astext, Date) <= today
+            )
+        )
+        
         result = await self._session.execute(stmt)
         models = result.scalars().all()
         return [self._to_entity(m) for m in models]
@@ -115,12 +135,14 @@ class StudyNoteRepository:
         return StudyNote(
             id=model.id,
             user_id=model.user_id,
+            area=LawArea(model.area),
             title=model.title,
             description=model.description,
             content=model.content,
             tags=model.tags,
             embedding=_coerce_embedding(model.embedding),
             questions=[UUID(qid) for qid in (model.questions or [])],
+            review_progress=Sm2Progress.model_validate(model.review_progress),
             created_at=model.created_at,
             updated_at=model.updated_at,
         )
@@ -130,12 +152,14 @@ class StudyNoteRepository:
         return StudyNoteModel(
             id=study_note.id,
             user_id=study_note.user_id,
+            area=study_note.area.value,
             title=study_note.title,
             description=study_note.description,
             content=study_note.content,
             tags=study_note.tags,
             embedding=study_note.embedding,
             questions=[str(qid) for qid in study_note.questions],
+            review_progress=study_note.review_progress.model_dump(mode='json'),
             created_at=study_note.created_at,
             updated_at=study_note.updated_at,
         )

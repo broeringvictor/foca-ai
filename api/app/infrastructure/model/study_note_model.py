@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
 from pgvector.sqlalchemy import HALFVEC
@@ -24,6 +24,7 @@ class StudyNoteModel:
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
+    area: Mapped[str] = mapped_column(String(100), nullable=False)
     title: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(String(500), nullable=True)
     content: Mapped[str | None] = mapped_column(String(20000), nullable=True)
@@ -36,22 +37,24 @@ class StudyNoteModel:
     )
     questions: Mapped[list[str]] = mapped_column(
         JSONB().with_variant(JSON(), "sqlite"),
+        nullable=False,
         default_factory=list,
     )
-    embedding: Mapped[list | None] = mapped_column(
-        HALFVEC(3072), nullable=True, init=False, default=None
-    )
-
     embedding: Mapped[list[float] | None] = mapped_column(
         HALFVEC(3072).with_variant(JSON(), "sqlite"),
         nullable=True,
         default=None,
     )
-
-    questions: Mapped[list[str]] = mapped_column(
+    review_progress: Mapped[dict] = mapped_column(
         JSONB().with_variant(JSON(), "sqlite"),
         nullable=False,
-        default_factory=list,
+        default_factory=lambda: {
+            "ease_factor": 2.5,
+            "interval_days": 0,
+            "next_review_date": datetime.now(timezone.utc).date().isoformat(),
+            "card_status": 0,
+            "lapsed_count": 0,
+        },
     )
 
     user: Mapped["UserModel"] = relationship(back_populates="study_notes", init=False)
