@@ -22,6 +22,7 @@ from app.application.use_cases.study_note.update import UpdateStudyNote
 from app.infrastructure.embedding import get_embedding_model
 from app.infrastructure.repositories.question_repository import QuestionRepository
 from app.infrastructure.repositories.study_note_repository import StudyNoteRepository
+from app.infrastructure.repositories.study_question_repository import StudyQuestionRepository
 from app.infrastructure.session import get_session
 
 
@@ -54,6 +55,7 @@ def get_find_related_questions_to_note_dependency(
     return FindRelatedQuestionsToNote(
         study_note_repository=StudyNoteRepository(session),
         question_repository=QuestionRepository(session),
+        study_question_repository=StudyQuestionRepository(session),
     )
 
 

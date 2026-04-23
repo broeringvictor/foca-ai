@@ -5,7 +5,8 @@ from app.api.dependecies.auth import get_current_user_id
 from app.api.dependecies.study import (
     get_list_due_law_areas_dependency,
     get_list_user_study_progress_dependency,
-    get_submit_area_review_dependency
+    get_submit_area_review_dependency,
+    get_next_study_session_dependency
 )
 from app.application.dto.study.study_dto import (
     ListStudyProgressResponse,
@@ -15,12 +16,27 @@ from app.application.dto.study.study_dto import (
 from app.application.use_cases.study.list_due import ListDueLawAreas
 from app.application.use_cases.study.list_progress import ListUserStudyProgress
 from app.application.use_cases.study.submit_review import SubmitAreaReview
+from app.application.use_cases.study.get_next_session import GetNextStudySession
 
 router = APIRouter(
     prefix="/study",
     tags=["study"],
     dependencies=[Depends(get_current_user_id)],
 )
+
+@router.get(
+    "/session",
+    summary="get next study session",
+    description="Retorna as próximas 10 questões ideais para o usuário estudar (priorizando revisões vencidas do SM-2).",
+    response_model=ListStudyProgressResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def get_session_questions(
+    limit: int = 10,
+    user_id: UUID = Depends(get_current_user_id),
+    use_case: GetNextStudySession = Depends(get_next_study_session_dependency),
+) -> ListStudyProgressResponse:
+    return await use_case.execute(user_id, limit=limit)
 
 @router.get(
     "/due",

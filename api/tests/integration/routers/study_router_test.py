@@ -26,7 +26,10 @@ def session_override(session):
 @pytest.mark.asyncio
 async def test_list_study_progress(client, auth_user, session_override):
     # Criar uma questão para garantir que venha na lista
-    question_model = QuestionFactory.create(area=LawArea.CIVIL)
+    question_model = QuestionFactory.create(
+        area=LawArea.CIVIL,
+        embedding=[0.1] * 3072
+    )
     session_override.add(question_model)
     await session_override.commit()
 
@@ -112,6 +115,14 @@ async def test_list_due_study_areas(client, auth_user, session_override):
         updated_at=datetime.now(timezone.utc)
     )
     session_override.add(study_model)
+    
+    # Criar uma questão com embedding para a área criminal
+    question = QuestionFactory.create(
+        area=LawArea.CRIMINAL,
+        embedding=[0.1] * 3072
+    )
+    session_override.add(question)
+    
     await session_override.commit()
     
     response = client.get("/api/v1/study/due")

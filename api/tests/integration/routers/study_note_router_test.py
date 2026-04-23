@@ -151,6 +151,7 @@ class TestStudyNoteRouter:
         body = get_response.json()
         assert body["id"] == study_note_id
         assert body["title"] == "Resumo de Processo Civil"
+        assert body["has_embedding"] is False
 
     def test_update_study_note(self, client):
         _create_user(client)
