@@ -5,6 +5,7 @@ import pytest
 
 from app.application.use_cases.study_note.get import GetStudyNote
 from app.domain.entities.study_note import StudyNote
+from app.domain.enums.law_area import LawArea
 
 
 class TestGetStudyNote:
@@ -14,6 +15,7 @@ class TestGetStudyNote:
         question_id = uuid8()
         note = StudyNote.create(
             user_id=user_id,
+            area=LawArea.CIVIL_PROCEDURE,
             title="Resumo de Processo Civil",
             description="Resumo",
             content="# Titulo",
@@ -28,4 +30,3 @@ class TestGetStudyNote:
         response = await use_case.execute(note.id, user_id)
 
         assert response.questions == [str(question_id)]
-

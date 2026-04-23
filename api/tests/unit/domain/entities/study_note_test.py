@@ -5,6 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.domain.entities.study_note import StudyNote
+from app.domain.enums.law_area import LawArea
 
 
 def _user_id() -> UUID:
@@ -16,6 +17,7 @@ class TestCreateStudyNote:
         user_id = _user_id()
         note = StudyNote.create(
             user_id=user_id,
+            area=LawArea.CIVIL,
             title="Minhas anotações",
             description="Descrição de estudo",
             content="Conteúdo completo",
@@ -23,6 +25,7 @@ class TestCreateStudyNote:
         )
 
         assert note.user_id == user_id
+        assert note.area == LawArea.CIVIL
         assert note.title == "Minhas anotações"
         assert note.description == "Descrição de estudo"
         assert note.content == "Conteúdo completo"
@@ -31,9 +34,11 @@ class TestCreateStudyNote:
     def test_creates_with_only_required_fields(self):
         note = StudyNote.create(
             user_id=_user_id(),
+            area=LawArea.CIVIL,
             title="Apenas título",
         )
 
+        assert note.area == LawArea.CIVIL
         assert note.description is None
         assert note.content is None
         assert note.tags == []
@@ -41,6 +46,7 @@ class TestCreateStudyNote:
     def test_creates_with_description_only(self):
         note = StudyNote.create(
             user_id=_user_id(),
+            area=LawArea.CIVIL,
             title="Título",
             description="Só descrição",
         )
@@ -52,6 +58,7 @@ class TestCreateStudyNote:
     def test_creates_with_content_only(self):
         note = StudyNote.create(
             user_id=_user_id(),
+            area=LawArea.CIVIL,
             title="Título",
             content="Só conteúdo",
         )
@@ -63,6 +70,7 @@ class TestCreateStudyNote:
     def test_creates_with_tags_only(self):
         note = StudyNote.create(
             user_id=_user_id(),
+            area=LawArea.CIVIL,
             title="Título",
             tags=["tag1", "tag2"],
         )
@@ -74,6 +82,7 @@ class TestCreateStudyNote:
     def test_tags_none_becomes_empty_list(self):
         note = StudyNote.create(
             user_id=_user_id(),
+            area=LawArea.CIVIL,
             title="Título",
             tags=None,
         )
@@ -83,18 +92,18 @@ class TestCreateStudyNote:
 
 class TestStudyNoteDefaults:
     def test_generates_id_automatically(self):
-        note = StudyNote.create(user_id=_user_id(), title="Título")
+        note = StudyNote.create(user_id=_user_id(), area=LawArea.CIVIL, title="Título")
 
         assert isinstance(note.id, UUID)
 
     def test_each_note_has_unique_id(self):
-        note_a = StudyNote.create(user_id=_user_id(), title="Título A")
-        note_b = StudyNote.create(user_id=_user_id(), title="Título B")
+        note_a = StudyNote.create(user_id=_user_id(), area=LawArea.CIVIL, title="Título A")
+        note_b = StudyNote.create(user_id=_user_id(), area=LawArea.CIVIL, title="Título B")
 
         assert note_a.id != note_b.id
 
     def test_sets_created_at_and_updated_at(self):
-        note = StudyNote.create(user_id=_user_id(), title="Título")
+        note = StudyNote.create(user_id=_user_id(), area=LawArea.CIVIL, title="Título")
 
         assert isinstance(note.created_at, datetime)
         assert isinstance(note.updated_at, datetime)
@@ -103,19 +112,19 @@ class TestStudyNoteDefaults:
 class TestStudyNoteTitleValidation:
     def test_title_too_short_raises(self):
         with pytest.raises(ValidationError):
-            StudyNote.create(user_id=_user_id(), title="abc")
+            StudyNote.create(user_id=_user_id(), area=LawArea.CIVIL, title="abc")
 
     def test_title_too_long_raises(self):
         with pytest.raises(ValidationError):
-            StudyNote.create(user_id=_user_id(), title="a" * 101)
+            StudyNote.create(user_id=_user_id(), area=LawArea.CIVIL, title="a" * 101)
 
     def test_title_at_min_length_is_valid(self):
-        note = StudyNote.create(user_id=_user_id(), title="abcd")
+        note = StudyNote.create(user_id=_user_id(), area=LawArea.CIVIL, title="abcd")
         assert note.title == "abcd"
 
     def test_title_at_max_length_is_valid(self):
         title = "a" * 100
-        note = StudyNote.create(user_id=_user_id(), title=title)
+        note = StudyNote.create(user_id=_user_id(), area=LawArea.CIVIL, title=title)
         assert note.title == title
 
 
@@ -124,6 +133,7 @@ class TestStudyNoteDescriptionValidation:
         with pytest.raises(ValidationError):
             StudyNote.create(
                 user_id=_user_id(),
+                area=LawArea.CIVIL,
                 title="Título",
                 description="abc",
             )
@@ -132,6 +142,7 @@ class TestStudyNoteDescriptionValidation:
         with pytest.raises(ValidationError):
             StudyNote.create(
                 user_id=_user_id(),
+                area=LawArea.CIVIL,
                 title="Título",
                 description="a" * 501,
             )
@@ -140,6 +151,7 @@ class TestStudyNoteDescriptionValidation:
         description = "a" * 500
         note = StudyNote.create(
             user_id=_user_id(),
+            area=LawArea.CIVIL,
             title="Título",
             description=description,
         )
@@ -151,6 +163,7 @@ class TestStudyNoteContentValidation:
         with pytest.raises(ValidationError):
             StudyNote.create(
                 user_id=_user_id(),
+                area=LawArea.CIVIL,
                 title="Título",
                 content="a" * 20001,
             )
@@ -159,6 +172,7 @@ class TestStudyNoteContentValidation:
         content = "a" * 20000
         note = StudyNote.create(
             user_id=_user_id(),
+            area=LawArea.CIVIL,
             title="Título",
             content=content,
         )
@@ -167,6 +181,7 @@ class TestStudyNoteContentValidation:
     def test_empty_content_is_valid(self):
         note = StudyNote.create(
             user_id=_user_id(),
+            area=LawArea.CIVIL,
             title="Título",
             content="",
         )
@@ -176,17 +191,18 @@ class TestStudyNoteContentValidation:
 class TestStudyNoteUserIdValidation:
     def test_invalid_user_id_raises(self):
         with pytest.raises(ValidationError):
-            StudyNote.create(user_id="not-a-uuid", title="Título")
+            StudyNote.create(user_id="not-a-uuid", area=LawArea.CIVIL, title="Título")
 
     def test_missing_user_id_raises(self):
         with pytest.raises(ValidationError):
-            StudyNote(title="Título")  # type: ignore[call-arg]
+            StudyNote(area=LawArea.CIVIL, title="Título")  # type: ignore[call-arg]
 
 
 class TestStudyNoteTagsNormalization:
     def test_removes_blank_tags_and_deduplicates_case_insensitive(self):
         note = StudyNote.create(
             user_id=_user_id(),
+            area=LawArea.CIVIL,
             title="Título",
             tags=[" Trabalho ", "", "trabalho", "Processo Civil", "processo civil"],
         )
@@ -198,6 +214,7 @@ class TestStudyNoteTagsNormalization:
         with pytest.raises(ValidationError):
             StudyNote.create(
                 user_id=_user_id(),
+                area=LawArea.CIVIL,
                 title="Título",
                 tags=valid_tags + ["tag-21"],
             )

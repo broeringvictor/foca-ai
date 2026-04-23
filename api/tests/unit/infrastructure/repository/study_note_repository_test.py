@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 import pytest
 
 from app.domain.entities.study_note import StudyNote
+from app.domain.enums.law_area import LawArea
 from app.infrastructure.repositories.study_note_repository import StudyNoteRepository
 from tests.factories.study_note import StudyNoteFactory
 
@@ -13,6 +14,7 @@ class TestStudyNoteRepository:
         repo = StudyNoteRepository(session)
         note = StudyNote.create(
             user_id=user_on_db.id,
+            area=LawArea.CONSTITUTIONAL,
             title="Resumo de Constitucional",
             description="Pontos sobre controle de constitucionalidade",
             content="# Resumo\n\nConteudo",
@@ -26,6 +28,7 @@ class TestStudyNoteRepository:
 
         assert saved is not None
         assert saved.id == note.id
+        assert saved.area == LawArea.CONSTITUTIONAL
         assert saved.title == "Resumo de Constitucional"
         assert saved.tags == ["constitucional", "revisao"]
 
@@ -34,6 +37,7 @@ class TestStudyNoteRepository:
         repo = StudyNoteRepository(session)
         model = StudyNoteFactory.build(
             user_id=user_on_db.id,
+            area=LawArea.CIVIL.value,
             title="Titulo antigo",
             description="Descricao antiga",
             tags=["antiga"],
@@ -97,4 +101,3 @@ class TestStudyNoteRepository:
 
         deleted = await repo.find_by_id(model.id)
         assert deleted is None
-
