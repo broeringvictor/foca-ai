@@ -13,6 +13,7 @@ from app.api.dependecies.question import (
     get_next_question_by_exam_dependency,
     get_pdf_bytes_for_review,
     get_question_dependency,
+    get_recategorize_existing_dependency,
     get_review_questions_from_pdf_dependency,
     get_update_question_dependency,
     list_questions_by_exam_dependency,
@@ -30,6 +31,8 @@ from app.application.dto.question.add_answer_key_dto import (
 from app.application.dto.question.categorize_dto import (
     CategorizeQuestionsDTO,
     CategorizeQuestionsResponse,
+    RecategorizeExistingDTO,
+    RecategorizeExistingResponse,
 )
 from app.application.dto.question.check_answer_dto import (
     CheckAnswerDTO,
@@ -51,6 +54,7 @@ from app.application.dto.question.update_dto import (
     UpdateQuestionResponse,
 )
 from app.application.use_cases.question.categorize import CategorizeQuestions
+from app.application.use_cases.question.recategorize_existing import RecategorizeExisting
 from app.application.use_cases.question.check_answer import CheckAnswer
 from app.application.use_cases.question.create import CreateQuestion
 from app.application.use_cases.question.delete import DeleteQuestion
@@ -218,6 +222,29 @@ async def categorize_questions(
     body: CategorizeQuestionsDTO,
     use_case: CategorizeQuestions = Depends(get_categorize_questions_dependency),
 ) -> CategorizeQuestionsResponse:
+    return await use_case.execute(body)
+
+
+@router.post(
+    "/recategorize-existing",
+    summary="recategorize existing",
+    description=(
+        "Recategoriza questões já existentes no banco de dados.\n\n"
+        "- Pode passar `exam_id` para recategorizar todas as questões de um exame.\n"
+        "- Pode passar `question_id` para recategorizar apenas uma questão.\n"
+        "- Filtros: `format_statement`, `categorize_tags`, `categorize_law_area`."
+    ),
+    response_model=RecategorizeExistingResponse,
+    status_code=status.HTTP_200_OK,
+    responses={
+        400: {"model": ErrorResponse, "description": "Entrada inválida"},
+        404: {"model": ErrorResponse, "description": "Não encontrado"},
+    },
+)
+async def recategorize_existing_questions(
+    body: RecategorizeExistingDTO,
+    use_case: RecategorizeExisting = Depends(get_recategorize_existing_dependency),
+) -> RecategorizeExistingResponse:
     return await use_case.execute(body)
 
 

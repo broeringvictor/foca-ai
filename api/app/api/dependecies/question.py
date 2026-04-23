@@ -16,6 +16,7 @@ from app.application.use_cases.question.get import (
     GetQuestion,
     ListQuestionsByExam,
 )
+from app.application.use_cases.question.recategorize_existing import RecategorizeExisting
 from app.application.use_cases.question.review_from_pdf import ReviewQuestionsFromPDF
 from app.application.use_cases.question.update import UpdateQuestion
 from app.domain.services.embedding_service import IEmbeddingService
@@ -174,5 +175,14 @@ def get_add_answer_key_to_exam_dependency(
 
 def get_categorize_questions_dependency() -> CategorizeQuestions:
     return CategorizeQuestions(
+        service=get_question_categorization_service_dependency(),
+    )
+
+
+def get_recategorize_existing_dependency(
+    session: AsyncSession = Depends(get_session),
+) -> RecategorizeExisting:
+    return RecategorizeExisting(
+        repository=QuestionRepository(session),
         service=get_question_categorization_service_dependency(),
     )
