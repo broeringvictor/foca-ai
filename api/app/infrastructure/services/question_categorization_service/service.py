@@ -3,7 +3,7 @@ from uuid import uuid8
 
 from langchain_core.language_models import BaseChatModel
 from loguru import logger
-from pydantic import UUID8
+from pydantic import UUID8, ValidationError
 
 from app.domain.entities.question import Question
 from app.domain.enums.alternatives import Alternative
@@ -35,6 +35,7 @@ class QuestionCategorizationService(IQuestionCategorizationService):
     MAX_REVIEW_CANDIDATES = 18
 
     def __init__(self, llm: BaseChatModel) -> None:
+        self._llm = llm
         self._structured_llm = llm.with_structured_output(ClassificationBatch)
 
     def classify(
@@ -69,21 +70,31 @@ class QuestionCategorizationService(IQuestionCategorizationService):
         Recategoriza questões existentes.
         """
         if not questions:
+            logger.warning("categorization.recategorize: No questions provided")
             return []
 
         # Converte entidades para RawExam para reutilizar lógica de classificação
-        raw_exam = RawExam(
-            edition="Existing",
-            exam_type="Existing",
-            color="Existing",
-            questions=[self._to_raw(q) for q in questions],
-        )
+        try:
+            raw_exam = RawExam(
+                edition=1,
+                name="Recategorization",
+                exam_type=1,
+                color="Unknown",
+                questions=[self._to_raw(q) for q in questions],
+            )
+        except ValidationError as e:
+            logger.error("categorization.recategorize: RawExam validation failed. Data: {}", e.errors())
+            raise
 
-        logger.info("categorization: recategorize start total={}", len(questions))
+        logger.info("categorization.recategorize: start total={} format={} tags={} area={}", 
+                    len(questions), format_statement, categorize_tags, categorize_law_area)
 
         # Executa classificação inicial
         assignments = self._initial_classification(raw_exam)
         
+        if len(assignments) == 0:
+            logger.error("categorization.recategorize: No assignments returned from LLM")
+
         # Para recategorização pontual ou de um exame completo, 
         # opcionalmente rodamos o rebalanceamento se houver muitas questões
         if len(questions) >= 10:
@@ -91,13 +102,16 @@ class QuestionCategorizationService(IQuestionCategorizationService):
             if snapshot.excess_areas and snapshot.deficit_areas:
                 assignments = self._review_imbalances(raw_exam, assignments, snapshot)
 
-        return self._build_updated_questions(
+        results = self._build_updated_questions(
             questions, 
             assignments, 
             format_statement, 
             categorize_tags, 
             categorize_law_area
         )
+        
+        logger.info("categorization.recategorize: done total={}", len(results))
+        return results
 
     def _initial_classification(
         self, raw_exam: RawExam
@@ -109,24 +123,67 @@ class QuestionCategorizationService(IQuestionCategorizationService):
         for offset in range(0, len(sorted_questions), self.INITIAL_BATCH_SIZE):
             batch = sorted_questions[offset : offset + self.INITIAL_BATCH_SIZE]
             payload = [self._to_payload(q) for q in batch]
+            questions_json = json.dumps(payload, ensure_ascii=False)
 
+            logger.info("categorization: calling LLM for batch offset={} size={}", offset, len(batch))
+            
+            results = []
             try:
-                batch_result = classify_chain.invoke({
-                    "questions_json": json.dumps(payload, ensure_ascii=False)
-                })
-            except Exception as exc:
-                logger.warning("categorization: classify_chain_failed error={}", exc)
-                batch_result = ClassificationBatch(results=[])
+                batch_result = classify_chain.invoke({"questions_json": questions_json})
+                
+                # Extração robusta do campo 'results'
+                if isinstance(batch_result, dict):
+                    results = batch_result.get('results', [])
+                else:
+                    results = getattr(batch_result, 'results', [])
 
-            for item in getattr(batch_result, 'results', []):
-                assignments[item.question_number] = ClassifiedQuestion(
-                    number=item.question_number,
-                    area=item.area,
-                    formatted_statement=getattr(item, 'formatted_statement', None),
-                    confidence=item.confidence,
-                    source="initial",
-                    tags=getattr(item, 'tags', []),
-                )
+                # Caso o LLM tenha retornado o JSON como string dentro do campo
+                if isinstance(results, str):
+                    try:
+                        results = json.loads(results)
+                    except Exception:
+                        logger.warning("categorization: results field was a string but not valid JSON")
+                        results = []
+                
+                logger.info("categorization: LLM returned {} results", len(results))
+            except Exception as exc:
+                logger.error("categorization: classify_chain_failed error={}. Trying fallback manual parse.", exc)
+                # O fallback manual poderia ser uma chamada sem formatador, 
+                # mas por ora vamos tentar extrair o que for possível do erro se for ValidationError
+                if "input_value='" in str(exc):
+                    # Tenta extrair o valor que falhou (técnica suja mas eficaz para debug/emergência)
+                    try:
+                        import re
+                        json_match = re.search(r"input_value='(\[.*\])'", str(exc), re.DOTALL)
+                        if json_match:
+                            results = json.loads(json_match.group(1))
+                            logger.info("categorization: Recovered {} results from validation error string", len(results))
+                    except Exception:
+                        pass
+
+            for item in results:
+                # Mapeamento seguro (aceita objeto ou dict)
+                def get_val(obj, key, default=None):
+                    if isinstance(obj, dict): return obj.get(key, default)
+                    return getattr(obj, key, default)
+
+                q_num = get_val(item, 'question_number')
+                q_area = get_val(item, 'area')
+                q_formatted = get_val(item, 'formatted_statement')
+                q_conf = get_val(item, 'confidence', 0.0)
+                q_tags = get_val(item, 'tags', [])
+
+                if q_num is not None:
+                    assignments[q_num] = ClassifiedQuestion(
+                        number=q_num,
+                        area=q_area,
+                        formatted_statement=q_formatted,
+                        confidence=q_conf,
+                        source="initial",
+                        tags=q_tags,
+                    )
+                    logger.debug("categorization: question {} classified as {}", q_num, q_area)
+        
         return assignments
 
     def _review_imbalances(
@@ -138,6 +195,8 @@ class QuestionCategorizationService(IQuestionCategorizationService):
         review_numbers = self._select_review_candidates(assignments, snapshot)
         if not review_numbers:
             return assignments
+
+        logger.info("categorization.review: candidates={}", review_numbers)
 
         by_number = {q.number: q for q in raw_exam.questions}
         to_review = [by_number[number] for number in review_numbers if number in by_number]
@@ -164,6 +223,7 @@ class QuestionCategorizationService(IQuestionCategorizationService):
                 for raw in batch
             ]
 
+            results = []
             try:
                 batch_result = review_chain.invoke({
                     "distribution_summary": distribution_summary,
@@ -171,23 +231,44 @@ class QuestionCategorizationService(IQuestionCategorizationService):
                     "deficit_areas": str(deficit_names),
                     "questions_json": json.dumps(payload, ensure_ascii=False)
                 })
+                
+                if isinstance(batch_result, dict):
+                    results = batch_result.get('results', [])
+                else:
+                    results = getattr(batch_result, 'results', [])
+                
+                if isinstance(results, str):
+                    results = json.loads(results)
+                    
             except Exception as exc:
-                logger.warning("categorization: review_chain_failed error={}", exc)
-                batch_result = ClassificationBatch(results=[])
+                logger.error("categorization: review_chain_failed error={}", exc)
 
-            for item in getattr(batch_result, 'results', []):
-                if item.question_number not in by_number:
+            for item in results:
+                def get_val(obj, key, default=None):
+                    if isinstance(obj, dict): return obj.get(key, default)
+                    return getattr(obj, key, default)
+
+                q_num = get_val(item, 'question_number')
+                if q_num not in by_number:
                     continue
-                existing = assignments.get(item.question_number)
-                new_formatted = getattr(item, 'formatted_statement', None) or (existing.formatted_statement if existing else None)
-                assignments[item.question_number] = ClassifiedQuestion(
-                    number=item.question_number,
-                    area=item.area,
+                
+                q_area = get_val(item, 'area')
+                q_formatted = get_val(item, 'formatted_statement')
+                q_conf = get_val(item, 'confidence', 0.0)
+                q_tags = get_val(item, 'tags', [])
+
+                existing = assignments.get(q_num)
+                new_formatted = q_formatted or (existing.formatted_statement if existing else None)
+                
+                assignments[q_num] = ClassifiedQuestion(
+                    number=q_num,
+                    area=q_area,
                     formatted_statement=new_formatted,
-                    confidence=item.confidence,
+                    confidence=q_conf,
                     source="review",
-                    tags=getattr(item, 'tags', []),
+                    tags=q_tags,
                 )
+                logger.debug("categorization.review: question {} re-classified as {}", q_num, q_area)
         return assignments
 
     def _select_review_candidates(
@@ -251,6 +332,7 @@ class QuestionCategorizationService(IQuestionCategorizationService):
         for q in original_questions:
             data = assignments.get(q.number)
             if not data:
+                logger.warning("categorization: No classification data for question {}", q.number)
                 updated.append(q)
                 continue
             
@@ -258,27 +340,33 @@ class QuestionCategorizationService(IQuestionCategorizationService):
             new_statement = (data.formatted_statement if format_statement and data.formatted_statement else q.statement)
             new_tags = data.tags if categorize_tags else q.tags
             
-            # Criamos uma nova instância com os dados atualizados
-            # Mantendo o ID original para permitir o update no banco
-            updated_q = Question(
-                id=q.id,
-                exam_id=q.exam_id,
-                number=q.number,
-                statement=new_statement,
-                area=new_area,
-                correct=q.correct,
-                alternative_a=q.alternative_a,
-                alternative_b=q.alternative_b,
-                alternative_c=q.alternative_c,
-                alternative_d=q.alternative_d,
-                tags=new_tags,
-                confidence=data.confidence,
-                source=data.source,
-                created_at=q.created_at,
-                updated_at=q.updated_at,
-                embedding=q.embedding
-            )
-            updated.append(updated_q)
+            logger.debug("categorization: Updating question {}. New area: {}, Statement length: {}, Tags count: {}", 
+                         q.number, new_area, len(new_statement), len(new_tags))
+
+            try:
+                updated_q = Question(
+                    id=q.id,
+                    exam_id=q.exam_id,
+                    number=q.number,
+                    statement=new_statement,
+                    area=new_area,
+                    correct=q.correct,
+                    alternative_a=q.alternative_a,
+                    alternative_b=q.alternative_b,
+                    alternative_c=q.alternative_c,
+                    alternative_d=q.alternative_d,
+                    tags=new_tags,
+                    confidence=data.confidence,
+                    source=data.source,
+                    created_at=q.created_at,
+                    updated_at=q.updated_at,
+                    embedding=q.embedding
+                )
+                updated.append(updated_q)
+            except ValidationError as e:
+                logger.error("categorization: Failed to build updated question {}: {}", q.number, e.errors())
+                updated.append(q)
+                
         return updated
 
     @staticmethod

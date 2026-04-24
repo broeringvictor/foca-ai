@@ -20,15 +20,19 @@ REGRAS CRÍTICAS:
 
 FORMATAÇÃO DO ENUNCIADO (formatted_statement):
 - O texto original vem de um PDF sem quebras de linha (bloco único).
-- Você DEVE reformatar o enunciado para melhorar a legibilidade usando '\\n\\n' para separar parágrafos.
-- Separe a narrativa de fatos, as fundamentações jurídicas e o comando final da questão (ex: "Assinale a opção correta").
+- Você DEVE obrigatoriamente reformatar o enunciado para melhorar a legibilidade usando '\\n\\n' para separar parágrafos.
+- Definição de Parágrafo: Para este fim, um parágrafo é uma unidade de sentido. Você deve criar um novo parágrafo sempre que:
+    1. Terminar a narrativa de um fato e começar a fundamentação jurídica.
+    2. Terminar a fundamentação jurídica e começar o comando da questão (ex: "Diante disso...", "Assinale...").
+    3. Houver uma mudança clara de contexto ou introdução de um novo personagem/evento.
+- Mesmo que o texto pareça gramaticalmente correto em bloco, a separação é obrigatória.
 - NÃO altere nenhuma palavra do texto original. Apenas adicione as quebras de linha.
 """
 
 CLASSIFY_EXAMPLES = [
     {
         "input": "Classifique: [{\"number\": 1, \"statement\": \"Mário ajuizou reclamação trabalhista contra X pleiteando horas extras. Em audiência, a empresa apresentou contestação alegando prescrição. O juiz deve...\"}]",
-        "output": '{"results":[{"question_number":1,"area":"direito_processual_do_trabalho","formatted_statement":"Mário ajuizou reclamação trabalhista contra X pleiteando horas extras.\\n\\nEm audiência, a empresa apresentou contestação alegando prescrição.\\n\\nO juiz deve...","confidence":0.92,"reasoning":"Foco no rito trabalhista (reclamação, contestação, decisão do juiz)."}]}'
+        "output": "{\"results\":[{\"question_number\":1,\"area\":\"direito_processual_do_trabalho\",\"formatted_statement\":\"Mário ajuizou reclamação trabalhista contra X pleiteando horas extras.\\n\\nEm audiência, a empresa apresentou contestação alegando prescrição.\\n\\nO juiz deve...\",\"confidence\":0.92,\"reasoning\":\"Foco no rito trabalhista (reclamação, contestação, decisão do juiz).\"}]}"
     },
     {
         "input": "Classifique: [{\"number\": 2, \"statement\": \"João, empregado da empresa X regido pela CLT, foi demitido sem justa causa. A quais verbas rescisórias ele tem direito?\"}]",

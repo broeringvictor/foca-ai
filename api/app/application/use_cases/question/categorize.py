@@ -4,6 +4,7 @@ from app.application.dto.question.categorize_dto import (
     CategorizeQuestionsDTO,
     CategorizeQuestionsResponse,
 )
+from app.application.dto.question.get_dto import QuestionListItem
 from app.application.use_cases.question.area_validation import build_area_validation
 from app.domain.services.question_categorization_service import (
     IQuestionCategorizationService,
@@ -33,7 +34,7 @@ class CategorizeQuestions:
         )
 
         return CategorizeQuestionsResponse(
-            questions=questions,
+            questions=[QuestionListItem.model_validate(q) for q in questions],
             questions_count=len(questions),
             area_validation=area_validation,
         )

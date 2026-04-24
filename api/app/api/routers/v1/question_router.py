@@ -31,6 +31,8 @@ from app.application.dto.question.add_answer_key_dto import (
 from app.application.dto.question.categorize_dto import (
     CategorizeQuestionsDTO,
     CategorizeQuestionsResponse,
+)
+from app.application.dto.question.recategorize_dto import (
     RecategorizeExistingDTO,
     RecategorizeExistingResponse,
 )
